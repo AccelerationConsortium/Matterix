@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2025, The Isaac Lab Project Developers.
+# Copyright (c) 2022-2025, The MATteRIX Project Developers.
 # All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -12,7 +12,7 @@ import argparse
 from isaaclab.app import AppLauncher
 
 # add argparse arguments
-parser = argparse.ArgumentParser(description="Zero agent for Isaac Lab environments.")
+parser = argparse.ArgumentParser(description="Zero agent for matterix environments.")
 parser.add_argument(
     "--disable_fabric", action="store_true", default=False, help="Disable fabric and use USD I/O operations."
 )
@@ -32,14 +32,14 @@ simulation_app = app_launcher.app
 import gymnasium as gym
 import torch
 
+import matterix.tasks  # noqa: F401
+
 import isaaclab_tasks  # noqa: F401
 from isaaclab_tasks.utils import parse_env_cfg
 
-import MATteRIX.tasks  # noqa: F401
-
 
 def main():
-    """Zero actions agent with Isaac Lab environment."""
+    """Zero actions agent with matterix environment."""
     # parse configuration
     env_cfg = parse_env_cfg(
         args_cli.task, device=args_cli.device, num_envs=args_cli.num_envs, use_fabric=not args_cli.disable_fabric

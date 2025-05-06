@@ -1,0 +1,32 @@
+# Codeowners are designated by their GitHub username. They are
+# the people who are responsible for reviewing and approving PRs
+# that modify the files that match the pattern.
+#
+# Codeowners are not the same as contributors. They are not
+# automatically added to the PR, but they will be requested to
+# review the PR when it is created.
+#
+# As a general rule, the codeowners are the people who are
+# most familiar with the code that the PR is modifying. If you
+# are not sure who to add, ask in the issue or in the PR itself.
+#
+# The format of the file is as follows:
+# <file pattern> <codeowners>
+
+
+# Core Framework
+/source/ @kouroshD @arjunsohal12 @z-ryan1
+
+# Standalone Scripts
+/scripts/ @kouroshD @arjunsohal12 @z-ryan1
+
+# Github Actions
+# This list is for people wanting to be notified every time there's a change
+# related to Github Actions
+/.github/ @kouroshD @arjunsohal12 @z-ryan1
+
+# Visual Studio Code
+/.vscode/ @kouroshD @arjunsohal12 @z-ryan1
+
+# Infrastructure (Docker, Docs, Tools)
+/docker/ @kouroshD @arjunsohal12 @z-ryan1

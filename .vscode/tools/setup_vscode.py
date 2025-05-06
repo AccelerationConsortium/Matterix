@@ -1,9 +1,9 @@
-# Copyright (c) 2022-2025, The Isaac Lab Project Developers.
+# Copyright (c) 2022-2025, The MATteRIX Project Developers.
 # All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-"""This script sets up the vs-code settings for the Isaac Lab project.
+"""This script sets up the vs-code settings for the MATteRIX project.
 
 This script merges the python.analysis.extraPaths from the "{ISAACSIM_DIR}/.vscode/settings.json" file into
 the ".vscode/settings.json" file.
@@ -61,7 +61,7 @@ ISAACSIM_DIR = isaacsim_dir
 
 
 def overwrite_python_analysis_extra_paths(isaaclab_settings: str) -> str:
-    """Overwrite the python.analysis.extraPaths in the Isaac Lab settings file.
+    """Overwrite the python.analysis.extraPaths in the matterix settings file.
 
     The extraPaths are replaced with the path names from the isaac-sim settings file that exists in the
     "{ISAACSIM_DIR}/.vscode/settings.json" file.
@@ -97,7 +97,7 @@ def overwrite_python_analysis_extra_paths(isaaclab_settings: str) -> str:
         path_names = [path_name.strip().strip('"') for path_name in path_names]
         path_names = [path_name for path_name in path_names if len(path_name) > 0]
 
-        # change the path names to be relative to the Isaac Lab directory
+        # change the path names to be relative to the matterix directory
         rel_path = os.path.relpath(ISAACSIM_DIR, PROJECT_DIR)
         path_names = ['"${workspaceFolder}/' + rel_path + "/" + path_name + '"' for path_name in path_names]
     else:
@@ -106,11 +106,11 @@ def overwrite_python_analysis_extra_paths(isaaclab_settings: str) -> str:
             f"[WARN] Could not find Isaac Sim VSCode settings: {isaacsim_vscode_filename}."
             "\n\tThis will result in missing 'python.analysis.extraPaths' in the VSCode"
             "\n\tsettings, which limits the functionality of the Python language server."
-            "\n\tHowever, it does not affect the functionality of the Isaac Lab project."
+            "\n\tHowever, it does not affect the functionality of the MATteRIX project."
             "\n\tWe are working on a fix for this issue with the Isaac Sim team."
         )
 
-    # add the path names that are in the Isaac Lab extensions directory
+    # add the path names that are in the matterix extensions directory
     isaaclab_extensions = os.listdir(os.path.join(PROJECT_DIR, "source"))
     path_names.extend(['"${workspaceFolder}/source/' + ext + '"' for ext in isaaclab_extensions])
 
@@ -119,19 +119,19 @@ def overwrite_python_analysis_extra_paths(isaaclab_settings: str) -> str:
     # deal with the path separator being different on Windows and Unix
     path_names = path_names.replace("\\", "/")
 
-    # replace the path names in the Isaac Lab settings file with the path names parsed
+    # replace the path names in the matterix settings file with the path names parsed
     isaaclab_settings = re.sub(
         r"\"python.analysis.extraPaths\": \[.*?\]",
         '"python.analysis.extraPaths": [\n\t\t'.expandtabs(4) + path_names + "\n\t]".expandtabs(4),
         isaaclab_settings,
         flags=re.DOTALL,
     )
-    # return the Isaac Lab settings string
+    # return the matterix settings string
     return isaaclab_settings
 
 
 def overwrite_default_python_interpreter(isaaclab_settings: str) -> str:
-    """Overwrite the default python interpreter in the Isaac Lab settings file.
+    """Overwrite the default python interpreter in the matterix settings file.
 
     The default python interpreter is replaced with the path to the python interpreter used by the
     isaac-sim project. This is necessary because the default python interpreter is the one shipped with
@@ -155,33 +155,33 @@ def overwrite_default_python_interpreter(isaaclab_settings: str) -> str:
         else:
             python_exe = python_exe.replace(f"kit{os.sep}python{os.sep}bin{os.sep}python3", "python.sh")
 
-    # replace the default python interpreter in the Isaac Lab settings file with the path to the
-    # python interpreter in the Isaac Lab directory
+    # replace the default python interpreter in the matterix settings file with the path to the
+    # python interpreter in the matterix directory
     isaaclab_settings = re.sub(
         r"\"python.defaultInterpreterPath\": \".*?\"",
         f'"python.defaultInterpreterPath": "{python_exe}"',
         isaaclab_settings,
         flags=re.DOTALL,
     )
-    # return the Isaac Lab settings file
+    # return the matterix settings file
     return isaaclab_settings
 
 
 def main():
-    # Isaac Lab template settings
+    # matterix template settings
     isaaclab_vscode_template_filename = os.path.join(PROJECT_DIR, ".vscode", "tools", "settings.template.json")
-    # make sure the Isaac Lab template settings file exists
+    # make sure the matterix template settings file exists
     if not os.path.exists(isaaclab_vscode_template_filename):
         raise FileNotFoundError(
-            f"Could not find the Isaac Lab template settings file: {isaaclab_vscode_template_filename}"
+            f"Could not find the matterix template settings file: {isaaclab_vscode_template_filename}"
         )
-    # read the Isaac Lab template settings file
+    # read the matterix template settings file
     with open(isaaclab_vscode_template_filename) as f:
         isaaclab_template_settings = f.read()
 
-    # overwrite the python.analysis.extraPaths in the Isaac Lab settings file with the path names
+    # overwrite the python.analysis.extraPaths in the matterix settings file with the path names
     isaaclab_settings = overwrite_python_analysis_extra_paths(isaaclab_template_settings)
-    # overwrite the default python interpreter in the Isaac Lab settings file with the path to the
+    # overwrite the default python interpreter in the matterix settings file with the path to the
     # python interpreter used to call this script
     isaaclab_settings = overwrite_default_python_interpreter(isaaclab_settings)
 
@@ -194,7 +194,7 @@ def main():
     )
     isaaclab_settings = header_message + isaaclab_settings
 
-    # write the Isaac Lab settings file
+    # write the matterix settings file
     isaaclab_vscode_filename = os.path.join(PROJECT_DIR, ".vscode", "settings.json")
     with open(isaaclab_vscode_filename, "w") as f:
         f.write(isaaclab_settings)
@@ -211,7 +211,7 @@ def main():
             isaaclab_vscode_template_filename, isaaclab_vscode_template_launch_filename
         )
         isaaclab_launch_settings = header_message + isaaclab_template_launch_settings
-        # write the Isaac Lab launch settings file
+        # write the matterix launch settings file
         with open(isaaclab_vscode_launch_filename, "w") as f:
             f.write(isaaclab_launch_settings)
 
