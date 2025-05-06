@@ -1,0 +1,43 @@
+name: Matterix Unit Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  MatterixUnitTests:
+    runs-on: self-hosted
+    defaults:
+      run:
+        shell: bash
+    env:
+      DOCKER_HOST: unix:///var/run/docker.sock
+
+    steps:
+    
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify Docker install
+        run: docker --version
+
+      - name: Start Docker container
+        run: |
+          sudo systemctl status docker
+          python3 docker/container.py start
+
+      - name: Run command inside the container
+        run: |
+          CONTAINER_ID=$(docker ps -qf "name=isaac-lab-base")
+          docker exec $CONTAINER_ID bash -c "echo Hello from inside the container!"
+          docker exec $CONTAINER_ID bash -c "ls /workspace"
+
+      - name: Stop container
+        run: |
+          python3 docker/container.py stop
+
+      - name: Clean workspace
+        run: |
+          rm -rf ./* .[^.]*
