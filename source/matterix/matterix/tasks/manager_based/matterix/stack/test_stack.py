@@ -68,7 +68,7 @@ FRANKA_PANDA_CFG_85 = ChemArticulationCfg(
             damping=4.0,
         ),
         "robotiq_gripper": ImplicitActuatorCfg(
-            joint_names_expr=["robotiq_85_left_knuckle_joint", "robotiq_85_right_knuckle_joint", "robotiq_85_left_finger_joint", "robotiq_85_right_finger_joint", "robotiq_85_left_inner_knuckle_joint", "robotiq_85_right_inner_knuckle_joint", "robotiq_85_left_finger_tip_joint", "robotiq_85_right_finger_tip_joint"],
+            joint_names_expr=["robotiq_85_left_knuckle_joint", "robotiq_85_right_knuckle_joint", "robotiq_85_left_inner_knuckle_joint", "robotiq_85_right_inner_knuckle_joint", "robotiq_85_left_finger_tip_joint", "robotiq_85_right_finger_tip_joint"],
             effort_limit=1000.0,
             velocity_limit=2.0,
             stiffness=2e3,
