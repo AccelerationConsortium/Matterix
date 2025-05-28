@@ -2,8 +2,25 @@
 # All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
+import gymnasium as gym
+import os
 
-"""Configurations for the object stack environments."""
+from . import (
+    test_stack
+)
 
-# We leave this file empty since we don't want to expose any configs in this package directly.
-# We still need this file to import the "config" module in the parent package.
+##
+# Register Gym environments.
+##
+
+##
+# Joint Position Control
+##
+gym.register(
+    id="Isaac-Stack-Cube-Franka-v1",
+    entry_point="matterix.tasks.manager_based.matterix:TestBaseEnv",
+    kwargs={
+        "env_cfg_entry_point": test_stack.FrankaCubeStackEnvTestCfg,
+    },
+    disable_env_checker=True,
+)
