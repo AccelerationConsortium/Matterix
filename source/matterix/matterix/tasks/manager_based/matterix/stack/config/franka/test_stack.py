@@ -44,16 +44,8 @@ FRANKA_PANDA_CFG_85 = ChemArticulationCfg(
             "panda_joint5": 0.0,
             "panda_joint6": 3.037,
             "panda_joint7": 0.741,
-            "panda_joint8": 0.0,
-            "dynamixel_robotiq_joint": 0.0,
-            "dynamixel_robotiq_coupling": 0.0,
-            "panda_dynamixel_coupling" : 0.0,
-            "dynamixel_base_joint" : 0.0,
-            "robotiq_85_base_joint" : 0.0,
             "robotiq_85_left_knuckle_joint" : 0.0,
             "robotiq_85_right_knuckle_joint" : 0.0,
-            "robotiq_85_left_finger_joint" : 0.0,
-            "robotiq_85_right_finger_joint" : 0.0,
             "robotiq_85_left_inner_knuckle_joint" : 0.0,
             "robotiq_85_right_inner_knuckle_joint" : 0.0,
             "robotiq_85_left_finger_tip_joint" : 0.0,
@@ -237,7 +229,7 @@ class FrankaCubeStackEnvTestCfg(TestBaseEnvCfg):
 
     articulated_assets = {
         "robot" : FRANKA_PANDA_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot"),
-        # "robot2" : FRANKA_PANDA_CFG_85.replace(prim_path="{ENV_REGEX_NS}/Robot2")
+        "robot2" : FRANKA_PANDA_CFG_85.replace(prim_path="{ENV_REGEX_NS}/Robot2")
     }
-    # articulated_assets["robot2"].init_state.pos = (1, 0, 0)
+    articulated_assets["robot2"].init_state.pos = (1, 0, 0)
 

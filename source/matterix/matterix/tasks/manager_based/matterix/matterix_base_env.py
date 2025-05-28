@@ -374,6 +374,7 @@ class TestBaseEnv(ManagerBasedEnv, gym.Env):
         """
         # update the curriculum for environments that need a reset
         self.curriculum_manager.compute(env_ids=env_ids)
+        print(self.scene._articulations)
         # reset the internal buffers of the scene elements
         self.scene.reset(env_ids)
         # apply events such as randomizations for environments that need a reset
