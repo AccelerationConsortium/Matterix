@@ -3,7 +3,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 from __future__ import annotations
-import builtins
 import torch
 from collections.abc import Sequence
 from typing import Any
@@ -11,23 +10,13 @@ from isaaclab.assets.articulation import ArticulationCfg
 from isaaclab.assets import ArticulationCfg, AssetBaseCfg
 
 import isaacsim.core.utils.torch as torch_utils
-import omni.log
-from isaacsim.core.simulation_manager import SimulationManager
 from isaaclab.sim.spawners.from_files.from_files_cfg import GroundPlaneCfg, UsdFileCfg
-from isaaclab.utils import configclass
 import isaaclab.sim as sim_utils
 
-from isaaclab.managers import ActionManager, EventManager, ObservationManager, RecorderManager
 from .manager_cfgs import ActionsCfg, EventCfg, ObservationsCfg
-from isaaclab.scene import InteractiveScene
-from isaaclab.sim import SimulationContext
 from isaaclab.ui.widgets import ManagerLiveVisualizer
-from isaaclab.utils.timer import Timer
 
-from .common import VecEnvObs
-from .manager_based_env_cfg import ManagerBasedEnvCfg
-from .test_base_env_cfg import TestBaseEnvCfg
-from .ui import ViewportCameraController
+from .matterix_base_env_cfg import TestBaseEnvCfg
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.scene import InteractiveSceneCfg
 
@@ -50,9 +39,8 @@ from isaacsim.core.version import get_version
 from isaaclab.managers import CommandManager, CurriculumManager, RewardManager, TerminationManager
 from isaaclab.ui.widgets import ManagerLiveVisualizer
 
-from .common import VecEnvStepReturn
-from .manager_based_env import ManagerBasedEnv
-from .manager_based_rl_env_cfg import ManagerBasedRLEnvCfg
+from isaaclab.envs.common import VecEnvStepReturn
+from isaaclab.envs.manager_based_env import ManagerBasedEnv
 
 
 class TestBaseEnv(ManagerBasedEnv, gym.Env):

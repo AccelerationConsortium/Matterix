@@ -18,8 +18,8 @@ from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sim import SimulationCfg
 from isaaclab.utils import configclass
 
-from .common import ViewerCfg
-from .ui import BaseEnvWindow
+from isaaclab.envs.common import ViewerCfg
+from isaaclab.envs.ui import BaseEnvWindow
 
 
 @configclass
