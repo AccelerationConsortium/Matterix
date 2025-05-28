@@ -35,7 +35,7 @@ import torch
 import matterix.tasks  # noqa: F401
 
 import isaaclab_tasks  # noqa: F401
-from isaaclab_tasks.utils import parse_env_cfg
+from matterix_tasks import parse_env_cfg
 
 
 def main():

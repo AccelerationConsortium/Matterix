@@ -14,8 +14,10 @@ MATTERIX_ASSETS_EXT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__)
 MATTERIX_ASSETS_DATA_DIR = os.path.join(MATTERIX_ASSETS_EXT_DIR, "data")
 """Path to the extension data directory."""
 
-MATTERIX_ASSETS_METADATA = toml.load(os.path.join(MATTERIX_ASSETS_EXT_DIR, "config", "extension.toml"))
+# MATTERIX_ASSETS_METADATA = toml.load(os.path.join(MATTERIX_ASSETS_EXT_DIR, "config", "extension.toml"))
 """Extension metadata dictionary parsed from the extension.toml file."""
 
 # Configure the module-level variables
-__version__ = MATTERIX_ASSETS_METADATA["package"]["version"]
+# __version__ = MATTERIX_ASSETS_METADATA["package"]["version"]
+
+from .chem_articulation import ChemArticulationCfg

@@ -12,17 +12,18 @@ import toml
 MATTERIX_TASKS_EXT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
 """Path to the extension source directory."""
 
-MATTERIX_TASKS_METADATA = toml.load(os.path.join(MATTERIX_TASKS_EXT_DIR, "config", "extension.toml"))
+# MATTERIX_TASKS_METADATA = toml.load(os.path.join(MATTERIX_TASKS_EXT_DIR, "config", "extension.toml"))
 """Extension metadata dictionary parsed from the extension.toml file."""
 
 # Configure the module-level variables
-__version__ = MATTERIX_TASKS_METADATA["package"]["version"]
+# __version__ = MATTERIX_TASKS_METADATA["package"]["version"]
 
 ##
 # Register Gym environments.
 ##
 
 from isaaclab_tasks.utils import import_packages
+from .parse_cfg import parse_env_cfg
 
 # The blacklist is used to prevent importing configs from sub-packages
 # TODO(@ashwinvk): Remove pick_place from the blacklist once pinocchio from Isaac Sim is compatibility
