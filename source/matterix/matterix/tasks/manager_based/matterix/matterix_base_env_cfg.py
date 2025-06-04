@@ -34,7 +34,7 @@ class DefaultEventManagerCfg:
 
 
 @configclass
-class TestBaseEnvCfg:
+class MatterixBaseEnvCfg:
     """Base configuration of the environment."""
 
     # simulation settings
