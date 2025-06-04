@@ -22,9 +22,10 @@ import isaaclab.sim as sim_utils
 from isaaclab.actuators import ImplicitActuatorCfg
 from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
 
-FRANKA_PANDA_CFG_85 = ChemArticulationCfg(
+@configclass
+class FRANKA_ROBOTIQ85_INST_CFG(ChemArticulationCfg):
     spawn=sim_utils.UsdFileCfg(
-        usd_path=f"/home/arjun/Desktop/Matterix_assets/robots/franka/franka-robotiq85/franka-robotiq85-inst.usd",
+        usd_path=f"/home/arjun/Desktop/Matterix_assets/robots/franka/franka-robotiq85/franka-arm-Robotiq2f85.usd",
         activate_contact_sensors=False,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
@@ -34,7 +35,7 @@ FRANKA_PANDA_CFG_85 = ChemArticulationCfg(
             enabled_self_collisions=True, solver_position_iteration_count=8, solver_velocity_iteration_count=0
         ),
         # collision_props=sim_utils.CollisionPropertiesCfg(contact_offset=0.005, rest_offset=0.0),
-    ),
+    )
     init_state=ArticulationCfg.InitialStateCfg(
         joint_pos={
             "panda_joint1": 0.0,
@@ -44,48 +45,43 @@ FRANKA_PANDA_CFG_85 = ChemArticulationCfg(
             "panda_joint5": 0.0,
             "panda_joint6": 3.037,
             "panda_joint7": 0.741,
-            "robotiq_85_left_knuckle_joint" : 0.0,
-            "robotiq_85_right_knuckle_joint" : 0.0,
-            "robotiq_85_left_inner_knuckle_joint" : 0.0,
-            "robotiq_85_right_inner_knuckle_joint" : 0.0,
-            "robotiq_85_left_finger_tip_joint" : 0.0,
-            "robotiq_85_right_finger_tip_joint" : 0.0,
+            "finger_joint" : 0.0,
         },
-    ),
+    )
     actuators={
         "panda_shoulder": ImplicitActuatorCfg(
             joint_names_expr=["panda_joint[1-4]"],
-            effort_limit=87.0,
-            velocity_limit=100.0,
+            effort_limit_sim=87.0,
+            velocity_limit_sim=2.175,
             stiffness=80.0,
             damping=4.0,
         ),
         "panda_forearm": ImplicitActuatorCfg(
             joint_names_expr=["panda_joint[5-7]"],
-            effort_limit=12.0,
-            velocity_limit=100.0,
+            effort_limit_sim=12.0,
+            velocity_limit_sim=2.61,
             stiffness=80.0,
             damping=4.0,
         ),
         "robotiq_gripper": ImplicitActuatorCfg(
-            joint_names_expr=["robotiq_85_left_knuckle_joint", "robotiq_85_right_knuckle_joint", "robotiq_85_left_inner_knuckle_joint", "robotiq_85_right_inner_knuckle_joint", "robotiq_85_left_finger_tip_joint", "robotiq_85_right_finger_tip_joint"],
-            effort_limit=1000.0,
-            velocity_limit=2.0,
+            joint_names_expr=["finger_joint"],
+            effort_limit_sim=200.0,
+            velocity_limit_sim=0.2,
             stiffness=2e3,
             damping=1e2,
-        )
-    },
-    soft_joint_pos_limit_factor=1.0,
-)
+        ),
+    }
+    soft_joint_pos_limit_factor=1.0
+FRANKA_PANDA_CFG_85 = FRANKA_ROBOTIQ85_INST_CFG()
 FRANKA_PANDA_CFG_85.action_terms = {
         "arm_action": mdp.JointPositionActionCfg(
             asset_name="robot2", joint_names=["panda_joint.*"], scale=0.5, use_default_offset=True
         ),
         "gripper_action": mdp.BinaryJointPositionActionCfg(
             asset_name="robot2",
-            joint_names=["robotiq_85_.*"],
-            open_command_expr={"robotiq_85_.*": 0.04},
-            close_command_expr={"robotiq_85_.*": 0.0},
+            joint_names=["finger_joint"],
+            open_command_expr={"finger_joint": 0.0},
+            close_command_expr={"finger_joint": 0.78},
         )
     }
 
