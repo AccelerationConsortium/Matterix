@@ -20,4 +20,4 @@ MATTERIX_ASSETS_DATA_DIR = os.path.join(MATTERIX_ASSETS_EXT_DIR, "data")
 # Configure the module-level variables
 # __version__ = MATTERIX_ASSETS_METADATA["package"]["version"]
 
-from .chem_articulation import ChemArticulationCfg
+from .matterix_articulation import MatterixArticulationCfg

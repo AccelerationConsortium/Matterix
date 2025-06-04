@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 from isaaclab.assets import RigidObjectCfg, AssetBaseCfg
-from matterix_assets import ChemArticulationCfg
+from matterix_assets import MatterixArticulationCfg
 from isaaclab.assets.articulation import ArticulationCfg
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import SceneEntityCfg
@@ -17,13 +17,13 @@ from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 
 from isaaclab_tasks.manager_based.manipulation.stack import mdp
 from isaaclab_tasks.manager_based.manipulation.stack.mdp import franka_stack_events
-from matterix.tasks.manager_based.matterix import TestBaseEnvCfg
+from matterix.envs import MatterixBaseEnvCfg
 import isaaclab.sim as sim_utils
 from isaaclab.actuators import ImplicitActuatorCfg
 from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
 
 @configclass
-class FRANKA_ROBOTIQ85_INST_CFG(ChemArticulationCfg):
+class FRANKA_ROBOTIQ85_INST_CFG(MatterixArticulationCfg):
     spawn=sim_utils.UsdFileCfg(
         usd_path=f"/home/arjun/Desktop/Matterix_assets/robots/franka/franka-robotiq85/franka-arm-Robotiq2f85.usd",
         activate_contact_sensors=False,
@@ -85,7 +85,7 @@ FRANKA_PANDA_CFG_85.action_terms = {
         )
     }
 
-FRANKA_PANDA_CFG = ChemArticulationCfg(
+FRANKA_PANDA_CFG = MatterixArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
         usd_path=f"{ISAACLAB_NUCLEUS_DIR}/Robots/FrankaEmika/panda_instanceable.usd",
         activate_contact_sensors=False,
@@ -182,7 +182,7 @@ cube_properties = RigidBodyPropertiesCfg(
         )
 
 @configclass
-class FrankaCubeStackEnvTestCfg(TestBaseEnvCfg):
+class FrankaCubeStackEnvTestCfg(MatterixBaseEnvCfg):
 
     objects = {
         # Set each stacking cube deterministically

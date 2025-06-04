@@ -6,8 +6,6 @@
 import gymnasium as gym
 
 from . import agents
-from .matterix_base_env import TestBaseEnv
-from .matterix_base_env_cfg import TestBaseEnvCfg
 ##
 # Register Gym environments.
 ##

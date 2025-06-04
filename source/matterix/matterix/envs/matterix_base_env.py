@@ -16,7 +16,7 @@ import isaaclab.sim as sim_utils
 from .manager_cfgs import ActionsCfg, EventCfg, ObservationsCfg
 from isaaclab.ui.widgets import ManagerLiveVisualizer
 
-from .matterix_base_env_cfg import TestBaseEnvCfg
+from .matterix_base_env_cfg import MatterixBaseEnvCfg
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.scene import InteractiveSceneCfg
 
@@ -43,7 +43,7 @@ from isaaclab.envs.common import VecEnvStepReturn
 from isaaclab.envs.manager_based_env import ManagerBasedEnv
 
 
-class TestBaseEnv(ManagerBasedEnv, gym.Env):
+class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
     """The superclass for the manager-based workflow reinforcement learning-based environments.
 
     This class inherits from :class:`ManagerBasedEnv` and implements the core functionality for
@@ -81,10 +81,10 @@ class TestBaseEnv(ManagerBasedEnv, gym.Env):
     }
     """Metadata for the environment."""
 
-    cfg: TestBaseEnvCfg
+    cfg: MatterixBaseEnvCfg
     """Configuration for the environment."""
 
-    def __init__(self, cfg: TestBaseEnvCfg, render_mode: str | None = None, **kwargs):
+    def __init__(self, cfg: MatterixBaseEnvCfg, render_mode: str | None = None, **kwargs):
         """Initialize the environment.
 
         Args:

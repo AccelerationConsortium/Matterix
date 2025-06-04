@@ -18,7 +18,7 @@ from . import (
 ##
 gym.register(
     id="Isaac-Stack-Cube-Franka-v1",
-    entry_point="matterix.tasks.manager_based.matterix:TestBaseEnv",
+    entry_point="matterix.envs:MatterixBaseEnv",
     kwargs={
         "env_cfg_entry_point": test_stack.FrankaCubeStackEnvTestCfg,
     },
