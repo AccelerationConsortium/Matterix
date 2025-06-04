@@ -9,7 +9,7 @@ from isaaclab.utils import configclass
 from isaaclab.assets.articulation import ArticulationCfg
 
 @configclass
-class ChemArticulationCfg(ArticulationCfg):
+class MatterixArticulationCfg(ArticulationCfg):
     """Configuration parameters for an articulation."""
 
     action_terms = {}
