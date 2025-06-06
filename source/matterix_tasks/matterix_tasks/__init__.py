@@ -7,7 +7,8 @@
 
 import os
 import toml
-
+import gymnasium as gym
+from . import stack
 # Conveniences to other module directories via relative paths
 MATTERIX_TASKS_EXT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
 """Path to the extension source directory."""
@@ -23,10 +24,10 @@ MATTERIX_TASKS_EXT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
 ##
 
 from isaaclab_tasks.utils import import_packages
-from .parse_cfg import parse_env_cfg
 
 # The blacklist is used to prevent importing configs from sub-packages
 # TODO(@ashwinvk): Remove pick_place from the blacklist once pinocchio from Isaac Sim is compatibility
 _BLACKLIST_PKGS = ["utils", ".mdp", "pick_place"]
 # Import all configs in this package
-import_packages(__name__, _BLACKLIST_PKGS)
+packages = import_packages(__name__, _BLACKLIST_PKGS)
+print(packages)

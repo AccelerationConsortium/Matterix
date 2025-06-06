@@ -13,9 +13,6 @@ from . import (
 # Register Gym environments.
 ##
 
-##
-# Joint Position Control
-##
 gym.register(
     id="Isaac-Stack-Cube-Franka-v1",
     entry_point="matterix.envs:MatterixBaseEnv",
