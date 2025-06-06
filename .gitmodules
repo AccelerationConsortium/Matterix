@@ -1,0 +1,4 @@
+[submodule "source/matterix_assets/data"]
+	path = source/matterix_assets/data
+	url = https://github.com/ac-rad/Matterix_assets.git
+	ignore = all

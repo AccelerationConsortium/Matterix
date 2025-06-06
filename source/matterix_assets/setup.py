@@ -1,9 +1,9 @@
-# Copyright (c) 2022-2025, The MATteRIX Project Developers.
+# Copyright (c) 2022-2025, The Matterix Project Developers.
 # All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-"""Installation script for the 'MATteRIX_assets' python package."""
+"""Installation script for the 'Matterix_assets' python package."""
 
 import os
 import toml
@@ -25,8 +25,8 @@ INSTALL_REQUIRES = [
 setup(
     name="matterix_assets",
     packages=["matterix_assets"],
-    author="MATteRIX Project Developers",
-    maintainer="MATteRIX Project Developers",
+    author="Matterix Project Developers",
+    maintainer="Matterix Project Developers",
     url=EXTENSION_TOML_DATA["package"]["repository"],
     version=EXTENSION_TOML_DATA["package"]["version"],
     description=EXTENSION_TOML_DATA["package"]["description"],

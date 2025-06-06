@@ -1,6 +1,6 @@
-# MATteRIX: Environment Suite
+# Matterix: Environment Suite
 
-Using the core framework developed as part of MATteRIX, we provide various learning environments for robotics and lab automation research.
+Using the core framework developed as part of Matterix, we provide various learning environments for robotics and lab automation research.
 These environments follow the `gym.Env` API from OpenAI Gym version `0.21.0`. The environments are registered using
 the Gym registry.
 

@@ -3,10 +3,10 @@
 version = "0.1.0"
 
 # Description
-title =  "MATteRIX Environments"
+title =  "Matterix Environments"
 description="Extension containing suite of environments for lab automation robot learning."
 readme  = "docs/README.md"
-repository = "https://github.com/ac-rad/MATteRIX.git"
+repository = "https://github.com/ac-rad/Matterix.git"
 category = "robotics"
 keywords = ["kit", "robotics", "rl", "il", "isaaclab"]
 
