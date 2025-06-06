@@ -7,11 +7,11 @@ version = "0.1.0"
 category = "robotics"
 readme  = "README.md"
 
-title = "MATteRIX framework for lab automation"
-author = "MATteRIX Project Developers"
-maintainer = "MATteRIX Project Developers"
+title = "Matterix framework for lab automation"
+author = "Matterix Project Developers"
+maintainer = "Matterix Project Developers"
 description="Extension providing main framework interfaces and abstractions for robotic lab automation learning."
-repository = "https://github.com/ac-rad/MATteRIX.git"
+repository = "https://github.com/ac-rad/Matterix.git"
 keywords = ["kit", "matterix", "isaaclab", "robotics", "lab", "automation"]
 
 [dependencies]

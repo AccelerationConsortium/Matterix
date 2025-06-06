@@ -1,9 +1,9 @@
-# Copyright (c) 2022-2025, The MATteRIX Project Developers.
+# Copyright (c) 2022-2025, The Matterix Project Developers.
 # All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-"""This script sets up the vs-code settings for the MATteRIX project.
+"""This script sets up the vs-code settings for the Matterix project.
 
 This script merges the python.analysis.extraPaths from the "{ISAACSIM_DIR}/.vscode/settings.json" file into
 the ".vscode/settings.json" file.
@@ -106,7 +106,7 @@ def overwrite_python_analysis_extra_paths(isaaclab_settings: str) -> str:
             f"[WARN] Could not find Isaac Sim VSCode settings: {isaacsim_vscode_filename}."
             "\n\tThis will result in missing 'python.analysis.extraPaths' in the VSCode"
             "\n\tsettings, which limits the functionality of the Python language server."
-            "\n\tHowever, it does not affect the functionality of the MATteRIX project."
+            "\n\tHowever, it does not affect the functionality of the Matterix project."
             "\n\tWe are working on a fix for this issue with the Isaac Sim team."
         )
 

@@ -1,4 +1,4 @@
-# MATteRIX: Assets for Robots and Objects
+# Matterix: Assets for Robots and Objects
 
 This extension contains configurations for various assets and sensors. The configuration instances are
 used to spawn and configure the instances in the simulation. They are passed to their corresponding
@@ -6,7 +6,7 @@ classes during construction.
 
 ## Organizing custom assets
 
-For MATteRIX, we primarily store assets GitHub submodules.
+For Matterix, we primarily store assets GitHub submodules.
 
 Inside the `data` directory, we recommend following the same structure as our Nucleus directory
 `Isaac/IsaacLab`. This helps us later to move these assets to the Nucleus server seamlessly.

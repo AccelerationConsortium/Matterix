@@ -16,7 +16,7 @@ jobs:
       DOCKER_HOST: unix:///var/run/docker.sock
 
     steps:
-    
+
       - name: Checkout code
         uses: actions/checkout@v4
 

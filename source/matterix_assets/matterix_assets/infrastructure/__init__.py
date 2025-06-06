@@ -3,4 +3,8 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import gymnasium as gym  # noqa: F401
+##
+# Configuration for different assets.
+##
+
+from .tables import *

@@ -3,10 +3,10 @@
 version = "0.1.0"
 
 # Description
-title =  "MATteRIX Assets"
+title =  "Matterix Assets"
 description="Extension containing configuration instances of different assets and sensors"
 readme  = "docs/README.md"
-repository = "https://github.com/ac-rad/MATteRIX.git"
+repository = "https://github.com/ac-rad/Matterix.git"
 category = "robotics"
 keywords = ["kit", "robotics", "assets", "isaaclab"]
 
