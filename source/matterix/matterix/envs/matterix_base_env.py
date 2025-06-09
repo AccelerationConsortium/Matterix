@@ -13,7 +13,7 @@ import isaacsim.core.utils.torch as torch_utils
 from isaaclab.sim.spawners.from_files.from_files_cfg import GroundPlaneCfg, UsdFileCfg
 import isaaclab.sim as sim_utils
 
-from .manager_cfgs import ActionsCfg, EventCfg, ObservationsCfg
+from matterix.managers import ActionsCfg, EventCfg, ObservationsCfg
 from isaaclab.ui.widgets import ManagerLiveVisualizer
 
 from .matterix_base_env_cfg import MatterixBaseEnvCfg
