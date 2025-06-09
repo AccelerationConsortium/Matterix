@@ -7,6 +7,8 @@
 import os
 import toml
 
+from .robots import *
+from .matterix_articulation import MatterixArticulationCfg
 # Conveniences to other module directories via relative paths
 MATTERIX_ASSETS_EXT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
 """Path to the extension source directory."""
@@ -19,5 +21,3 @@ MATTERIX_ASSETS_DATA_DIR = os.path.join(MATTERIX_ASSETS_EXT_DIR, "data")
 
 # Configure the module-level variables
 # __version__ = MATTERIX_ASSETS_METADATA["package"]["version"]
-
-from .matterix_articulation import MatterixArticulationCfg

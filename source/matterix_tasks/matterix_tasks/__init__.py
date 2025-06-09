@@ -30,4 +30,3 @@ from isaaclab_tasks.utils import import_packages
 _BLACKLIST_PKGS = ["utils", ".mdp", "pick_place"]
 # Import all configs in this package
 packages = import_packages(__name__, _BLACKLIST_PKGS)
-print(packages)
