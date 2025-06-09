@@ -32,7 +32,7 @@ from isaaclab.managers import EventTermCfg as EventTerm
 
 
 @configclass
-class FRANKA_ROBOTI2F85_INST_CFG(ArticulationCfg):
+class FRANKA_ROBOTI2F85_INST_CFG(MatterixArticulationCfg):
     spawn = sim_utils.UsdFileCfg(
         usd_path=f"{MATTERIX_ASSETS_DATA_DIR}/robots/franka/franka-robotiq85/franka-robotiq85-inst.usd",
         activate_contact_sensors=False,
@@ -81,6 +81,20 @@ class FRANKA_ROBOTI2F85_INST_CFG(ArticulationCfg):
         ),
     }
     soft_joint_pos_limit_factor = 1.0
+
+    action_terms = {
+        "arm_action": mdp.JointPositionActionCfg(
+            asset_name="robot2", joint_names=["panda_joint.*"], scale=0.5, use_default_offset=True
+        ),
+        "gripper_action": mdp.BinaryJointPositionActionCfg(
+            asset_name="robot2",
+            joint_names=["finger_joint"],
+            open_command_expr={"finger_joint": 0.0},
+            close_command_expr={"finger_joint": 0.78},
+        )
+    }
+    semantic_tags = [("class", "robot")]
+
 
 
 """Configuration of Franka Emika Panda robot with Robotiq 2F85 gripper."""
@@ -160,10 +174,10 @@ class FRANKA_PANDA_CFG(MatterixArticulationCfg):
     """Configuration of Franka Emika Panda robot."""
     action_terms = {
             "arm_action": mdp.JointPositionActionCfg(
-                asset_name="robot2", joint_names=["panda_joint.*"], scale=0.5, use_default_offset=True
+                asset_name="robot", joint_names=["panda_joint.*"], scale=0.5, use_default_offset=True
             ),
             "gripper_action": mdp.BinaryJointPositionActionCfg(
-                asset_name="robot2",
+                asset_name="robot",
                 joint_names=["panda_finger.*"],
                 open_command_expr={"panda_finger_.*": 0.04},
                 close_command_expr={"panda_finger_.*": 0.0},
