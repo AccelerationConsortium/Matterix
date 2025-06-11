@@ -12,10 +12,7 @@ The following configurations are available:
 
 Reference: https://github.com/frankaemika/franka_ros
 """
-import os
-MATTERIX_ASSETS_EXT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
-MATTERIX_ASSETS_DATA_DIR = os.path.join(MATTERIX_ASSETS_EXT_DIR, "data")
-
+from ..constants import MATTERIX_ASSETS_DATA_DIR
 import isaaclab.sim as sim_utils
 from isaaclab.actuators import ImplicitActuatorCfg
 from isaaclab.assets.articulation import ArticulationCfg

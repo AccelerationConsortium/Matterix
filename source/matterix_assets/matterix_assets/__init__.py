@@ -6,7 +6,7 @@
 
 import os
 import toml
-
+from .constants import *
 from .robots import *
 from .matterix_articulation import MatterixArticulationCfg
 # Conveniences to other module directories via relative paths
