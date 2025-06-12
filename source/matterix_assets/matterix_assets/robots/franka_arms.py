@@ -12,7 +12,7 @@ The following configurations are available:
 
 Reference: https://github.com/frankaemika/franka_ros
 """
-from ..constants import MATTERIX_ASSETS_DATA_DIR
+from matterix_assets import MATTERIX_ASSETS_DATA_DIR
 import isaaclab.sim as sim_utils
 from isaaclab.actuators import ImplicitActuatorCfg
 from isaaclab.assets.articulation import ArticulationCfg
