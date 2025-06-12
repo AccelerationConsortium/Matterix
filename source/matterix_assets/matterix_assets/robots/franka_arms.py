@@ -83,11 +83,9 @@ class FRANKA_ROBOTI2F85_INST_CFG(MatterixArticulationCfg):
         "arm_action": mdp.JointPositionActionCfg(
             asset_name="robot2", joint_names=["panda_joint.*"], scale=0.5, use_default_offset=True
         ),
-        "gripper_action": mdp.BinaryJointPositionActionCfg(
+        "gripper_action": mdp.JointPositionActionCfg(
             asset_name="robot2",
             joint_names=["finger_joint"],
-            open_command_expr={"finger_joint": 0.0},
-            close_command_expr={"finger_joint": 0.78},
         )
     }
     semantic_tags = [("class", "robot")]
