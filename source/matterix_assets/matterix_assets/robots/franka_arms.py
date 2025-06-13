@@ -81,10 +81,9 @@ class FRANKA_ROBOTI2F85_INST_CFG(MatterixArticulationCfg):
 
     action_terms = {
         "arm_action": mdp.JointPositionActionCfg(
-            asset_name="robot2", joint_names=["panda_joint.*"], scale=0.5, use_default_offset=True
+            joint_names=["panda_joint.*"], scale=0.5, use_default_offset=True
         ),
         "gripper_action": mdp.JointPositionActionCfg(
-            asset_name="robot2",
             joint_names=["finger_joint"],
         )
     }
@@ -169,10 +168,9 @@ class FRANKA_PANDA_CFG(MatterixArticulationCfg):
     """Configuration of Franka Emika Panda robot."""
     action_terms = {
             "arm_action": mdp.JointPositionActionCfg(
-                asset_name="robot", joint_names=["panda_joint.*"], scale=0.5, use_default_offset=True
+                joint_names=["panda_joint.*"], scale=0.5, use_default_offset=True
             ),
             "gripper_action": mdp.BinaryJointPositionActionCfg(
-                asset_name="robot",
                 joint_names=["panda_finger.*"],
                 open_command_expr={"panda_finger_.*": 0.04},
                 close_command_expr={"panda_finger_.*": 0.0},
