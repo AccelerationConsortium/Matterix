@@ -6,11 +6,9 @@ from __future__ import annotations
 import torch
 from collections.abc import Sequence
 from typing import Any
-from isaaclab.assets.articulation import ArticulationCfg
 from isaaclab.assets import ArticulationCfg, AssetBaseCfg
 
-import isaacsim.core.utils.torch as torch_utils
-from isaaclab.sim.spawners.from_files.from_files_cfg import GroundPlaneCfg, UsdFileCfg
+from isaaclab.sim.spawners.from_files.from_files_cfg import GroundPlaneCfg
 import isaaclab.sim as sim_utils
 
 from matterix.managers import ActionsCfg, EventCfg, ObservationsCfg
@@ -30,14 +28,11 @@ from isaaclab.scene import InteractiveSceneCfg
 import gymnasium as gym
 import math
 import numpy as np
-import torch
-from collections.abc import Sequence
 from typing import Any, ClassVar
 
 from isaacsim.core.version import get_version
 
 from isaaclab.managers import CommandManager, CurriculumManager, RewardManager, TerminationManager
-from isaaclab.ui.widgets import ManagerLiveVisualizer
 
 from isaaclab.envs.common import VecEnvStepReturn
 from isaaclab.envs.manager_based_env import ManagerBasedEnv
