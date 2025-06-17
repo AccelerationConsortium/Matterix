@@ -9,6 +9,10 @@ The following configurations are available:
 
 * :obj:`FRANKA_ROBOTI2F85_INST_CFG`: Instantiated Franka Emika Panda robot with ROBOTIQ 2F85 gripper
 * :obj:`FRANKA_ROBOTIQ2F85_INST_HIGH_PD_CFG`: Franka Emika Panda robot with Robotiq 2F85 gripper with stiffer PD control
+* :obj:`FRANKA_PANDA_CFG`: Instantiated Franka Emika Panda robot
+* :obj:`FRANKA_PANDA_HIGH_PD_CFG`: Franka Emika Panda robot with stiffer PD control
+* :obj:`FRANKA_PANDA_HIGH_PD_IK_CFG`: Franka Emika Panda robot with stiffer PD control and differential IK action
+
 
 Reference: https://github.com/frankaemika/franka_ros
 """
@@ -93,9 +97,25 @@ class FRANKA_ROBOTI2F85_INST_CFG(MatterixArticulationCfg):
             joint_names=["finger_joint"],
         )
     }
+    event_terms = {    
+        "init_franka_arm_pose" : EventTerm(
+            func=franka_stack_events.set_default_joint_pose,
+            mode="startup",
+            params={
+                "default_pose": [0.0444, -0.1894, -0.1107, -2.5148, 0.0044, 2.3775, 0.6952, 0.0],
+            },
+        ),
+
+        "randomize_franka_joint_state" : EventTerm(
+            func=franka_stack_events.randomize_joint_by_gaussian_offset,
+            mode="reset",
+            params={
+                "mean": 0.0,
+                "std": 0.02,
+            },
+        )
+    }
     semantic_tags = [("class", "robot")]
-
-
 
 """Configuration of Franka Emika Panda robot with Robotiq 2F85 gripper."""
 
@@ -115,12 +135,12 @@ class FRANKA_ROBOTIQ2F85_INST_HIGH_PD_CFG(FRANKA_ROBOTI2F85_INST_CFG):
     actuators["panda_forearm"] = actuators["panda_forearm"].copy()
     actuators["panda_forearm"].stiffness = 400.0
     actuators["panda_forearm"].damping = 80.0
-
-
-"""Configuration of Franka Emika Panda robot with  with Robotiq 2F85 gripper stiffer PD control.
+"""Configuration of Franka Emika Panda robot  with Robotiq 2F85 gripper and stiffer PD control.
 
 This configuration is useful for task-space control using differential IK.
 """
+
+
 @configclass
 class FRANKA_PANDA_CFG(MatterixArticulationCfg):
     spawn=sim_utils.UsdFileCfg(
@@ -218,8 +238,28 @@ class FRANKA_PANDA_CFG(MatterixArticulationCfg):
     }
     semantic_tags = [("class", "robot")]
 
+
 @configclass
 class FRANKA_PANDA_HIGH_PD_CFG(FRANKA_PANDA_CFG):
+    # Override `spawn` by copying and modifying the nested rigid_props
+    spawn = FRANKA_PANDA_CFG().spawn.copy()
+    spawn.rigid_props.disable_gravity = True
+
+    # Copy and modify actuators
+    actuators = FRANKA_PANDA_CFG().actuators.copy()
+    actuators["panda_shoulder"] = actuators["panda_shoulder"].copy()
+    actuators["panda_shoulder"].stiffness = 400.0
+    actuators["panda_shoulder"].damping = 80.0
+
+    actuators["panda_forearm"] = actuators["panda_forearm"].copy()
+    actuators["panda_forearm"].stiffness = 400.0
+    actuators["panda_forearm"].damping = 80.0
+"""Configuration of Franka Emika Panda robot with stiffer PD control.
+"""
+
+
+@configclass
+class FRANKA_PANDA_HIGH_PD_IK_CFG(FRANKA_PANDA_CFG):
     spawn = FRANKA_PANDA_CFG().spawn.copy()
     actuators = FRANKA_PANDA_CFG().actuators.copy()
 
@@ -242,3 +282,7 @@ class FRANKA_PANDA_HIGH_PD_CFG(FRANKA_PANDA_CFG):
                     close_command_expr={"panda_finger_.*": 0.0},
                 )
             }
+"""Configuration of Franka Emika Panda robot with stiffer PD control.
+
+This configuration is useful for task-space control using differential IK.
+"""
