@@ -7,7 +7,6 @@ from typing import Dict, List
 from isaaclab.utils import configclass
 
 from isaaclab.assets import RigidObjectCfg
-from isaaclab.managers.action_manager import ActionTermCfg
 @configclass
 class MatterixRigidObject(RigidObjectCfg):
     """Configuration parameters for an articulation."""
