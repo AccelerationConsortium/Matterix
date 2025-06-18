@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2025, The Isaac Lab Project Developers.
+# Copyright (c) 2022-2025, The Matterix Project Developers.
 # All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -6,25 +6,6 @@ from __future__ import annotations
 import torch
 from collections.abc import Sequence
 from typing import Any
-from isaaclab.assets import ArticulationCfg, AssetBaseCfg
-
-from isaaclab.sim.spawners.from_files.from_files_cfg import GroundPlaneCfg
-import isaaclab.sim as sim_utils
-
-from matterix.managers import ActionsCfg, EventCfg, ObservationsCfg
-from isaaclab.ui.widgets import ManagerLiveVisualizer
-
-from .matterix_base_env_cfg import MatterixBaseEnvCfg
-from isaaclab.managers import SceneEntityCfg
-from isaaclab.scene import InteractiveSceneCfg
-
-# Copyright (c) 2022-2025, The Isaac Lab Project Developers.
-# All rights reserved.
-#
-# SPDX-License-Identifier: BSD-3-Clause
-
-# needed to import for allowing type-hinting: np.ndarray | None
-
 import gymnasium as gym
 import math
 import numpy as np
@@ -32,10 +13,18 @@ from typing import Any, ClassVar
 
 from isaacsim.core.version import get_version
 
+from isaaclab.assets import ArticulationCfg, AssetBaseCfg
+from isaaclab.sim.spawners.from_files.from_files_cfg import GroundPlaneCfg
+import isaaclab.sim as sim_utils
+from isaaclab.ui.widgets import ManagerLiveVisualizer
+from isaaclab.managers import SceneEntityCfg
+from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.managers import CommandManager, CurriculumManager, RewardManager, TerminationManager
-
 from isaaclab.envs.common import VecEnvStepReturn
 from isaaclab.envs.manager_based_env import ManagerBasedEnv
+
+from matterix.managers import ActionsCfg, EventCfg, ObservationsCfg
+from .matterix_base_env_cfg import MatterixBaseEnvCfg
 
 
 class MatterixBaseEnv(ManagerBasedEnv, gym.Env):

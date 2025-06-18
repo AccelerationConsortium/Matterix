@@ -11,7 +11,7 @@ from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 
 from matterix.envs import MatterixBaseEnvCfg
 
-from matterix_assets.robots import FRANKA_PANDA_HIGH_PD_CFG
+from matterix_assets.robots import FRANKA_PANDA_HIGH_PD_IK_CFG
 from matterix_assets import MatterixRigidObject
 ##
 # Pre-defined configs
@@ -60,6 +60,6 @@ class FrankaCubeStackEnvTestCfg(MatterixBaseEnvCfg):
     }
 
     articulated_assets = {
-        "robot" : FRANKA_PANDA_HIGH_PD_CFG().replace(prim_path="{ENV_REGEX_NS}/Robot"),
+        "robot" : FRANKA_PANDA_HIGH_PD_IK_CFG().replace(prim_path="{ENV_REGEX_NS}/Robot"),
     }
 
