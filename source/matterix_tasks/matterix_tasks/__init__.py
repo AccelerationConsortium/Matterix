@@ -5,10 +5,12 @@
 
 """Package containing task implementations for various robotic environments."""
 
+import gymnasium as gym
 import os
 import toml
-import gymnasium as gym
+
 from . import stack
+
 # Conveniences to other module directories via relative paths
 MATTERIX_TASKS_EXT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
 """Path to the extension source directory."""

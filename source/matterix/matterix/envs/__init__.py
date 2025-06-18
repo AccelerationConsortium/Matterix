@@ -7,8 +7,7 @@ import gymnasium as gym
 
 from .matterix_base_env import MatterixBaseEnv
 from .matterix_base_env_cfg import MatterixBaseEnvCfg
+
 ##
 # Register Gym environments.
 ##
-
-

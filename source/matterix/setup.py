@@ -8,7 +8,7 @@
 import os
 import toml
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 # Obtain the extension data from the extension.toml file
 EXTENSION_PATH = os.path.dirname(os.path.realpath(__file__))

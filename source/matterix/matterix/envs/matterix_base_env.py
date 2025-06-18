@@ -3,27 +3,26 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 from __future__ import annotations
-import torch
-from collections.abc import Sequence
-from typing import Any
+
 import gymnasium as gym
 import math
 import numpy as np
+import torch
+from collections.abc import Sequence
 from typing import Any, ClassVar
 
 from isaacsim.core.version import get_version
+from matterix.managers import ActionsCfg, EventCfg, ObservationsCfg
 
-from isaaclab.assets import ArticulationCfg, AssetBaseCfg
-from isaaclab.sim.spawners.from_files.from_files_cfg import GroundPlaneCfg
 import isaaclab.sim as sim_utils
-from isaaclab.ui.widgets import ManagerLiveVisualizer
-from isaaclab.managers import SceneEntityCfg
-from isaaclab.scene import InteractiveSceneCfg
-from isaaclab.managers import CommandManager, CurriculumManager, RewardManager, TerminationManager
+from isaaclab.assets import ArticulationCfg, AssetBaseCfg
 from isaaclab.envs.common import VecEnvStepReturn
 from isaaclab.envs.manager_based_env import ManagerBasedEnv
+from isaaclab.managers import CommandManager, CurriculumManager, RewardManager, SceneEntityCfg, TerminationManager
+from isaaclab.scene import InteractiveSceneCfg
+from isaaclab.sim.spawners.from_files.from_files_cfg import GroundPlaneCfg
+from isaaclab.ui.widgets import ManagerLiveVisualizer
 
-from matterix.managers import ActionsCfg, EventCfg, ObservationsCfg
 from .matterix_base_env_cfg import MatterixBaseEnvCfg
 
 
@@ -398,15 +397,12 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         # reset the episode length buffer
         self.episode_length_buf[env_ids] = 0
 
-
-
     def add_action_terms(self, actions, scene):
         for asset_name, asset_cfg in scene.__dict__.items():
             if isinstance(asset_cfg, ArticulationCfg):
                 for term_name, term in asset_cfg.action_terms.items():
                     term.asset_name = asset_name
                     setattr(actions, f"{asset_name}_{term_name}", term)
-
 
     def add_event_terms(self, events, scene):
         for asset_name, asset_cfg in scene.__dict__.items():
@@ -441,11 +437,10 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             prim_path="/World/GroundPlane",
             init_state=AssetBaseCfg.InitialStateCfg(pos=[0, 0, -1.05]),
             spawn=GroundPlaneCfg(),
-        )    # plane
+        )  # plane
 
         # lights
         self.cfg.scene.light = AssetBaseCfg(
             prim_path="/World/light",
             spawn=sim_utils.DomeLightCfg(color=(0.75, 0.75, 0.75), intensity=3000.0),
         )
-
