@@ -8,7 +8,7 @@
 import os
 import toml
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 # Obtain the extension data from the extension.toml file
 EXTENSION_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -20,21 +20,22 @@ INSTALL_REQUIRES = [
     # NOTE: Add dependencies
     "psutil",
 ]
+PYTORCH_INDEX_URL = ["https://download.pytorch.org/whl/cu118"]
 
 # Installation operation
 setup(
     name="matterix",
-    packages=["matterix"],
-    author=EXTENSION_TOML_DATA["package"]["author"],
-    maintainer=EXTENSION_TOML_DATA["package"]["maintainer"],
+    author="Matterix Project Developers",
+    maintainer="Matterix Project Developers",
     url=EXTENSION_TOML_DATA["package"]["repository"],
     version=EXTENSION_TOML_DATA["package"]["version"],
     description=EXTENSION_TOML_DATA["package"]["description"],
     keywords=EXTENSION_TOML_DATA["package"]["keywords"],
-    install_requires=INSTALL_REQUIRES,
-    license="MIT",
     include_package_data=True,
     python_requires=">=3.10",
+    install_requires=INSTALL_REQUIRES,
+    dependency_links=PYTORCH_INDEX_URL,
+    packages=find_packages(),
     classifiers=[
         "Natural Language :: English",
         "Programming Language :: Python :: 3.10",

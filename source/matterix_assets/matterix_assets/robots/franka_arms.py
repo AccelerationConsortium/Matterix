@@ -22,11 +22,17 @@ from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
 from isaaclab.envs import mdp
 from isaaclab_tasks.manager_based.manipulation.stack.mdp import franka_stack_events
 from isaaclab.managers import EventTermCfg as EventTerm
-
+from isaaclab.sensors import FrameTransformerCfg, OffsetCfg
+from isaaclab.markers.config import FRAME_MARKER_CFG  # isort: skip
+from isaaclab.controllers.differential_ik_cfg import DifferentialIKControllerCfg
+from isaaclab.envs.mdp.actions.actions_cfg import DifferentialInverseKinematicsActionCfg
 ##
 # Configuration
 ##
 
+marker_cfg = FRAME_MARKER_CFG.copy()
+marker_cfg.markers["frame"].scale = (0.1, 0.1, 0.1)
+marker_cfg.prim_path = "/Visuals/FrameTransformer"
 
 @configclass
 class FRANKA_ROBOTI2F85_INST_CFG(MatterixArticulationCfg):
@@ -195,4 +201,44 @@ class FRANKA_PANDA_CFG(MatterixArticulationCfg):
         )
     }
 
+    sensors = {"ee_frame" : FrameTransformerCfg(
+            prim_path="/panda_link0",
+            debug_vis=False,
+            visualizer_cfg=marker_cfg,
+            target_frames=[
+                FrameTransformerCfg.FrameCfg(
+                    prim_path="/panda_hand",
+                    name="end_effector",
+                    offset=OffsetCfg(
+                        pos=[0.0, 0.0, 0.1034],
+                    ),
+                ),
+            ],
+        )
+    }
     semantic_tags = [("class", "robot")]
+
+@configclass
+class FRANKA_PANDA_HIGH_PD_CFG(FRANKA_PANDA_CFG):
+    spawn = FRANKA_PANDA_CFG().spawn.copy()
+    actuators = FRANKA_PANDA_CFG().actuators.copy()
+
+    spawn.rigid_props.disable_gravity = True
+    actuators["panda_shoulder"].stiffness = 400.0
+    actuators["panda_shoulder"].damping = 80.0
+    actuators["panda_forearm"].stiffness = 400.0
+    actuators["panda_forearm"].damping = 80.0
+    action_terms = {
+            "arm_action": DifferentialInverseKinematicsActionCfg(
+                asset_name="robot",
+                joint_names=["panda_joint.*"],
+                body_name="panda_hand",
+                controller=DifferentialIKControllerCfg(command_type="pose", use_relative_mode=False, ik_method="dls"),
+                body_offset=DifferentialInverseKinematicsActionCfg.OffsetCfg(pos=[0.0, 0.0, 0.107]),
+            ),
+            "gripper_action": mdp.BinaryJointPositionActionCfg(
+                    joint_names=["panda_finger.*"],
+                    open_command_expr={"panda_finger_.*": 0.04},
+                    close_command_expr={"panda_finger_.*": 0.0},
+                )
+            }

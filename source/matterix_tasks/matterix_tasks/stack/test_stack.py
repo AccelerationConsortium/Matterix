@@ -11,7 +11,8 @@ from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 
 from matterix.envs import MatterixBaseEnvCfg
 
-from matterix_assets.robots import FRANKA_PANDA_CFG
+from matterix_assets.robots import FRANKA_PANDA_HIGH_PD_CFG
+from matterix_assets import MatterixRigidObject
 ##
 # Pre-defined configs
 ##
@@ -30,35 +31,26 @@ class FrankaCubeStackEnvTestCfg(MatterixBaseEnvCfg):
 
     objects = {
         # Set each stacking cube deterministically
-        "cube_1" : RigidObjectCfg(
-            prim_path="{ENV_REGEX_NS}/Cube_1",
-            init_state=RigidObjectCfg.InitialStateCfg(pos=[0.4, 0.0, 0.0203], rot=[1, 0, 0, 0]),
+        "object" : MatterixRigidObject(
+            prim_path="{ENV_REGEX_NS}/Object",
+            init_state=RigidObjectCfg.InitialStateCfg(pos=[0.5, 0, 0.055], rot=[1, 0, 0, 0]),
             spawn=UsdFileCfg(
-                usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/blue_block.usd",
-                scale=(1.0, 1.0, 1.0),
-                rigid_props=cube_properties,
-                semantic_tags=[("class", "cube_1")],
+                usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd",
+                scale=(0.8, 0.8, 0.8),
+                rigid_props=RigidBodyPropertiesCfg(
+                    solver_position_iteration_count=16,
+                    solver_velocity_iteration_count=1,
+                    max_angular_velocity=1000.0,
+                    max_linear_velocity=1000.0,
+                    max_depenetration_velocity=5.0,
+                    disable_gravity=False,
+                ),
             ),
-        ),
-        "cube_2" : RigidObjectCfg(
-            prim_path="{ENV_REGEX_NS}/Cube_2",
-            init_state=RigidObjectCfg.InitialStateCfg(pos=[0.55, 0.05, 0.0203], rot=[1, 0, 0, 0]),
-            spawn=UsdFileCfg(
-                usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/red_block.usd",
-                scale=(1.0, 1.0, 1.0),
-                rigid_props=cube_properties,
-                semantic_tags=[("class", "cube_2")],
-            ),
-        ),
-        "cube_3" : RigidObjectCfg(
-            prim_path="{ENV_REGEX_NS}/Cube_3",
-            init_state=RigidObjectCfg.InitialStateCfg(pos=[0.60, -0.1, 0.0203], rot=[1, 0, 0, 0]),
-            spawn=UsdFileCfg(
-                usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/green_block.usd",
-                scale=(1.0, 1.0, 1.0),
-                rigid_props=cube_properties,
-                semantic_tags=[("class", "cube_3")],
-            ),
+            frames= {
+                "pre_grasp": [0, 0, 0.1],
+                "grasp": [0, 0, 0],
+                "post_grasp": [0, 0, 0.1]
+            }
         ),
         "table" : AssetBaseCfg(
             prim_path="{ENV_REGEX_NS}/Table",
@@ -68,6 +60,6 @@ class FrankaCubeStackEnvTestCfg(MatterixBaseEnvCfg):
     }
 
     articulated_assets = {
-        "robot" : FRANKA_PANDA_CFG().replace(prim_path="{ENV_REGEX_NS}/Robot"),
+        "robot" : FRANKA_PANDA_HIGH_PD_CFG().replace(prim_path="{ENV_REGEX_NS}/Robot"),
     }
 
