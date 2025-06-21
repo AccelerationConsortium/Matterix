@@ -1,3 +1,8 @@
+# Copyright (c) 2022-2025, The Matterix Project Developers.
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 # Copyright (c) 2022-2025, The Isaac Lab Project Developers.
 # All rights reserved.
 #
@@ -18,7 +23,6 @@ It uses the `warp` library to run the state machine in parallel on the GPU.
 """Launch Omniverse Toolkit first."""
 
 import argparse
-
 
 from isaaclab.app import AppLauncher
 
@@ -41,10 +45,13 @@ simulation_app = app_launcher.app
 
 import gymnasium as gym
 import torch
-import matterix_tasks
+
+import matterix_tasks  # noqa: F401
+from matterix.state_machine import PickObject, StateMachine
+
 from isaaclab_tasks.manager_based.manipulation.lift.lift_env_cfg import LiftEnvCfg
 from isaaclab_tasks.utils.parse_cfg import parse_env_cfg
-from matterix.state_machine import *
+
 
 def main():
     # parse configuration
@@ -58,7 +65,7 @@ def main():
     # create environment
     env = gym.make("Isaac-Stack-Cube-Franka-v1", cfg=env_cfg).unwrapped
     # reset environment at start
-    obs_dict = env.reset()
+    _ = env.reset()
     sm = StateMachine(env)
     while simulation_app.is_running():
         # run everything in inference mode

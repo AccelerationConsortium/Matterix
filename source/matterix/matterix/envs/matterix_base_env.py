@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2025, The Isaac Lab Project Developers.
+# Copyright (c) 2022-2025, The Matterix Project Developers.
 # All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -30,14 +30,23 @@ from isaaclab.envs.common import VecEnvObs
 import gymnasium as gym
 import math
 import numpy as np
+import torch
+from collections.abc import Sequence
 from typing import Any, ClassVar
 import os
 from isaacsim.core.version import get_version
+from matterix.managers import ActionsCfg, EventCfg, ObservationsCfg
 
-from isaaclab.managers import CommandManager, CurriculumManager, RewardManager, TerminationManager
-
+import isaaclab.sim as sim_utils
+from isaaclab.assets import ArticulationCfg, AssetBaseCfg
 from isaaclab.envs.common import VecEnvStepReturn
 from isaaclab.envs.manager_based_env import ManagerBasedEnv
+from isaaclab.managers import CommandManager, CurriculumManager, RewardManager, SceneEntityCfg, TerminationManager
+from isaaclab.scene import InteractiveSceneCfg
+from isaaclab.sim.spawners.from_files.from_files_cfg import GroundPlaneCfg
+from isaaclab.ui.widgets import ManagerLiveVisualizer
+
+from .matterix_base_env_cfg import MatterixBaseEnvCfg
 
 
 class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
@@ -490,7 +499,6 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
                     term.asset_name = asset_name
                     setattr(actions, f"{asset_name}_{term_name}", term)
 
-
     def add_event_terms(self, events, scene):
         for asset_name, asset_cfg in scene.__dict__.items():
             if isinstance(asset_cfg, ArticulationCfg):
@@ -522,11 +530,10 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             prim_path="/World/GroundPlane",
             init_state=AssetBaseCfg.InitialStateCfg(pos=[0, 0, -1.05]),
             spawn=GroundPlaneCfg(),
-        )    # plane
+        )  # plane
 
         # lights
         self.cfg.scene.light = AssetBaseCfg(
             prim_path="/World/light",
             spawn=sim_utils.DomeLightCfg(color=(0.75, 0.75, 0.75), intensity=3000.0),
         )
-

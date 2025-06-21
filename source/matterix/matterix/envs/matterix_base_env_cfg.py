@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2025, The Isaac Lab Project Developers.
+# Copyright (c) 2022-2025, The Matterix Project Developers.
 # All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -12,14 +12,13 @@ configuring the environment instances, viewer settings, and simulation parameter
 from dataclasses import MISSING
 
 import isaaclab.envs.mdp as mdp
+from isaaclab.envs.common import ViewerCfg
+from isaaclab.envs.ui import BaseEnvWindow
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import RecorderManagerBaseCfg as DefaultEmptyRecorderManagerCfg
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sim import SimulationCfg
 from isaaclab.utils import configclass
-
-from isaaclab.envs.common import ViewerCfg
-from isaaclab.envs.ui import BaseEnvWindow
 
 
 @configclass
@@ -103,7 +102,7 @@ class MatterixBaseEnvCfg:
 
     Please refer to the :class:`isaaclab.managers.EventManager` class for more details.
     """
-    
+
     # general settings
     is_finite_horizon: bool = False
     """Whether the learning task is treated as a finite or infinite horizon problem for the agent.
@@ -190,7 +189,7 @@ class MatterixBaseEnvCfg:
 
     num_envs = 1
     replicate_physics = False
-    env_spacing=2.5
+    env_spacing = 2.5
 
     def __post_init__(self):
         """Post initialization."""
