@@ -11,13 +11,15 @@ from isaaclab.assets import ArticulationCfg, AssetBaseCfg
 from isaaclab.sim.spawners.from_files.from_files_cfg import GroundPlaneCfg
 import isaaclab.sim as sim_utils
 
-from matterix.managers import ActionsCfg, EventCfg, ObservationsCfg
+from matterix.managers import ActionsCfg, EventCfg, ObservationsCfg, MatterixBaseRecorderCfg
 from isaaclab.ui.widgets import ManagerLiveVisualizer
 
 from .matterix_base_env_cfg import MatterixBaseEnvCfg
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.scene import InteractiveSceneCfg
-
+from isaaclab.managers import DatasetExportMode
+from isaacsim.core.simulation_manager import SimulationManager
+from isaaclab.envs.common import VecEnvObs
 # Copyright (c) 2022-2025, The Isaac Lab Project Developers.
 # All rights reserved.
 #
@@ -29,7 +31,7 @@ import gymnasium as gym
 import math
 import numpy as np
 from typing import Any, ClassVar
-
+import os
 from isaacsim.core.version import get_version
 
 from isaaclab.managers import CommandManager, CurriculumManager, RewardManager, TerminationManager
@@ -92,6 +94,20 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         self.cfg = cfg
 
         self.setup_scene()
+
+        if self.cfg.record_path != None:
+
+            output_dir = os.path.dirname(self.cfg.record_path)
+            output_file_name = os.path.splitext(os.path.basename(self.cfg.record_path))[0]
+
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+
+            self.cfg.recorders = MatterixBaseRecorderCfg()
+            self.cfg.recorders.dataset_export_dir_path = output_dir
+            self.cfg.recorders.dataset_filename = output_file_name
+            self.cfg.recorders.dataset_export_mode = DatasetExportMode.EXPORT_SUCCEEDED_ONLY
+
         # initialize the base class to setup the scene.
         super().__init__(cfg=cfg)
         # store the render mode
@@ -409,7 +425,63 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         # reset the episode length buffer
         self.episode_length_buf[env_ids] = 0
 
+    def reset(
+        self, seed: int | None = None, env_ids: Sequence[int] | None = None, options: dict[str, Any] | None = None
+    ) -> tuple[VecEnvObs, dict]:
+        """Resets the specified environments and returns observations.
 
+        This function calls the :meth:`_reset_idx` function to reset the specified environments.
+        However, certain operations, such as procedural terrain generation, that happened during initialization
+        are not repeated.
+
+        Args:
+            seed: The seed to use for randomization. Defaults to None, in which case the seed is not set.
+            env_ids: The environment ids to reset. Defaults to None, in which case all environments are reset.
+            options: Additional information to specify how the environment is reset. Defaults to None.
+
+                Note:
+                    This argument is used for compatibility with Gymnasium environment definition.
+
+        Returns:
+            A tuple containing the observations and extras.
+        """
+        if env_ids is None:
+            env_ids = torch.arange(self.num_envs, dtype=torch.int64, device=self.device)
+
+        if self.recorder_manager is not None:
+            self.recorder_manager.record_pre_reset(env_ids, force_export_or_skip=False)
+            self.recorder_manager.set_success_to_episodes(
+                env_ids, torch.tensor([[True]], dtype=torch.bool, device=self.device)
+            )
+            self.recorder_manager.export_episodes(env_ids)
+        # trigger recorder terms for pre-reset calls
+
+        # set the seed
+        if seed is not None:
+            self.seed(seed)
+
+        # reset state of scene
+        self._reset_idx(env_ids)
+
+        # update articulation kinematics
+        self.scene.write_data_to_sim()
+        self.sim.forward()
+        # if sensors are added to the scene, make sure we render to reflect changes in reset
+        if self.sim.has_rtx_sensors() and self.cfg.rerender_on_reset:
+            self.sim.render()
+
+        # trigger recorder terms for post-reset calls
+        self.recorder_manager.record_post_reset(env_ids)
+
+        # compute observations
+        self.obs_buf = self.observation_manager.compute()
+
+        if self.cfg.wait_for_textures and self.sim.has_rtx_sensors():
+            while SimulationManager.assets_loading():
+                self.sim.render()
+
+        # return observations
+        return self.obs_buf, self.extras
 
     def add_action_terms(self, actions, scene):
         for asset_name, asset_cfg in scene.__dict__.items():
@@ -430,7 +502,6 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         self.cfg.actions = ActionsCfg()
         self.cfg.events = EventCfg()
         self.cfg.scene = InteractiveSceneCfg(self.cfg.num_envs, self.cfg.env_spacing, self.cfg.replicate_physics)
-        self.cfg.observations = ObservationsCfg()
         # populate scene with asset configs
         for asset_name, asset_cfg in self.cfg.articulated_assets.items():
             setattr(self.cfg.scene, asset_name, asset_cfg)
@@ -440,8 +511,7 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
                 for target in sensor_cfg.target_frames:
                     target.prim_path = asset_cfg.prim_path + target.prim_path
                 setattr(self.cfg.scene, sensor_name, sensor_cfg)
-                print(sensor_cfg)
-                print(self.cfg.scene.ee_frame)
+
         for object_name, object_cfg in self.cfg.objects.items():
             setattr(self.cfg.scene, object_name, object_cfg)
 

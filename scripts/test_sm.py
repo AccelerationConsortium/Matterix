@@ -56,7 +56,7 @@ def main():
     )
     env_cfg.num_envs = args_cli.num_envs
     # create environment
-    env = gym.make("Isaac-Stack-Cube-Franka-v1", cfg=env_cfg)
+    env = gym.make("Isaac-Stack-Cube-Franka-v1", cfg=env_cfg).unwrapped
     # reset environment at start
     obs_dict = env.reset()
     sm = StateMachine(env)

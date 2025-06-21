@@ -1,1 +1,1 @@
-from .manager_base_cfgs import ActionsCfg, EventCfg, ObservationsCfg
+from .manager_base_cfgs import ActionsCfg, EventCfg, ObservationsCfg, MatterixBaseRecorderCfg

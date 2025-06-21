@@ -7,6 +7,7 @@ class StateMachine:
         Args:
             env: The underlying environment that supports parallel execution
         """
+        print(env)
         self.env = env
         self.num_envs = env.num_envs
         self.device = env.unwrapped.device
@@ -56,10 +57,10 @@ class StateMachine:
                 self.actions.append(action)
         # Initialize observation history tensors
         self.obs_history = {}
-        for k, v in self.obs_dict.items():
-            # Shape: (num_actions + 1, num_envs, K) - +1 for initial state
-            self.obs_history[k] = torch.zeros((len(actions) + 1, self.num_envs, v.shape[1]), device=self.device)
-            self.obs_history[k][0] = v  # Store initial observations
+        # for k, v in self.obs_dict.items():
+        #     # Shape: (num_actions + 1, num_envs, K) - +1 for initial state
+        #     self.obs_history[k] = torch.zeros((len(actions) + 1, self.num_envs, v.shape[1]), device=self.device)
+        #     self.obs_history[k][0] = v  # Store initial observations
 
         self.frame_history = []
 

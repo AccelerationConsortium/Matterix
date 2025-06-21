@@ -10,12 +10,35 @@ from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 
 from matterix.envs import MatterixBaseEnvCfg
-
+from isaaclab.managers import ObservationGroupCfg as ObsGroup
+from isaaclab.managers import ObservationTermCfg as ObsTerm
+from matterix.envs import mdp
 from matterix_assets.robots import FRANKA_PANDA_HIGH_PD_CFG
 from matterix_assets import MatterixRigidObject
 ##
 # Pre-defined configs
 ##
+@configclass
+class ObservationsCfg:
+    """Observation specifications for the MDP."""
+
+    @configclass
+    class PolicyCfg(ObsGroup):
+        """Observations for policy group with state values."""
+
+        actions = ObsTerm(func=mdp.last_action)
+        joint_pos = ObsTerm(func=mdp.joint_pos_rel)
+        joint_vel = ObsTerm(func=mdp.joint_vel_rel)
+        eef_pos = ObsTerm(func=mdp.ee_frame_pos)
+        eef_quat = ObsTerm(func=mdp.ee_frame_quat)
+        gripper_pos = ObsTerm(func=mdp.gripper_pos)
+
+        def __post_init__(self):
+            self.enable_corruption = False
+            self.concatenate_terms = False
+
+    policy: PolicyCfg = PolicyCfg()
+    
 
 cube_properties = RigidBodyPropertiesCfg(
             solver_position_iteration_count=16,
@@ -63,3 +86,6 @@ class FrankaCubeStackEnvTestCfg(MatterixBaseEnvCfg):
         "robot" : FRANKA_PANDA_HIGH_PD_CFG().replace(prim_path="{ENV_REGEX_NS}/Robot"),
     }
 
+    observations = ObservationsCfg()
+
+    record_path = "datasets/dataset.hdf5"

@@ -84,6 +84,7 @@ class MatterixBaseEnvCfg:
 
     Please refer to the :class:`isaaclab.managers.RecorderManager` class for more details.
     """
+    record_path : str = None
 
     observations: object = MISSING
     """Observation space settings.
