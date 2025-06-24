@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 from __future__ import annotations
+from re import L
 import torch
 from collections.abc import Sequence
 from typing import Any
@@ -522,6 +523,9 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
 
         for object_name, object_cfg in self.cfg.objects.items():
             setattr(self.cfg.scene, object_name, object_cfg)
+
+        for sensor_name, sensor_cfg in self.cfg.sensors.items():
+            setattr(self.cfg.scene, sensor_name, sensor_cfg)
 
         self.add_action_terms(self.cfg.actions, self.cfg.scene)
         self.add_event_terms(self.cfg.events, self.cfg.scene)

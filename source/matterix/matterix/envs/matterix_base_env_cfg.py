@@ -186,6 +186,8 @@ class MatterixBaseEnvCfg:
     particle_systems = {}
     reserved_fluids = None
     semantics = None
+  
+    sensors = {}
 
     num_envs = 1
     replicate_physics = False
