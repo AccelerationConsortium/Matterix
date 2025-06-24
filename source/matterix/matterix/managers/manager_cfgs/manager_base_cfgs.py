@@ -12,7 +12,7 @@ class ActionsCfg:
 
 
 @configclass
-class EventCfg:
+class EventsCfg:
     """Configuration for events."""
 
 

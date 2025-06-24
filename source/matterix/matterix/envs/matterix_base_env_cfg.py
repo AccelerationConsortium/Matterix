@@ -20,6 +20,8 @@ from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sim import SimulationCfg
 from isaaclab.utils import configclass
 
+from matterix_assets import MatterixArticulationCfg, MatterixRigidObject
+
 
 @configclass
 class DefaultEventManagerCfg:
@@ -179,9 +181,9 @@ class MatterixBaseEnvCfg:
     wait_for_textures: bool = True
     """True to wait for assets to be loaded completely, False otherwise. Defaults to True."""
 
-    articulated_assets = {}
+    articulated_assets: dict[str, MatterixArticulationCfg] = {}
 
-    objects = {}
+    objects: dict[str, MatterixRigidObject] = {}
 
     particle_systems = {}
     reserved_fluids = None

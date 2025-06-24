@@ -6,47 +6,28 @@ from __future__ import annotations
 from re import L
 import torch
 from collections.abc import Sequence
-from typing import Any
-from isaaclab.assets import ArticulationCfg, AssetBaseCfg
-
-from isaaclab.sim.spawners.from_files.from_files_cfg import GroundPlaneCfg
-import isaaclab.sim as sim_utils
-
-from matterix.managers import ActionsCfg, EventCfg, ObservationsCfg, MatterixBaseRecorderCfg
-from isaaclab.ui.widgets import ManagerLiveVisualizer
-
-from .matterix_base_env_cfg import MatterixBaseEnvCfg
-from isaaclab.managers import SceneEntityCfg
-from isaaclab.scene import InteractiveSceneCfg
-from isaaclab.managers import DatasetExportMode
-from isaacsim.core.simulation_manager import SimulationManager
-from isaaclab.envs.common import VecEnvObs
-# Copyright (c) 2022-2025, The Isaac Lab Project Developers.
-# All rights reserved.
-#
-# SPDX-License-Identifier: BSD-3-Clause
-
-# needed to import for allowing type-hinting: np.ndarray | None
-
 import gymnasium as gym
 import math
+# needed to import for allowing type-hinting: np.ndarray | None
 import numpy as np
-import torch
-from collections.abc import Sequence
 from typing import Any, ClassVar
 import os
-from isaacsim.core.version import get_version
-from matterix.managers import ActionsCfg, EventCfg, ObservationsCfg
 
-import isaaclab.sim as sim_utils
+from isaacsim.core.version import get_version
+
 from isaaclab.assets import ArticulationCfg, AssetBaseCfg
+import isaaclab.sim as sim_utils
 from isaaclab.envs.common import VecEnvStepReturn
 from isaaclab.envs.manager_based_env import ManagerBasedEnv
 from isaaclab.managers import CommandManager, CurriculumManager, RewardManager, SceneEntityCfg, TerminationManager
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sim.spawners.from_files.from_files_cfg import GroundPlaneCfg
 from isaaclab.ui.widgets import ManagerLiveVisualizer
+from isaaclab.managers import DatasetExportMode
+from isaacsim.core.simulation_manager import SimulationManager
+from isaaclab.envs.common import VecEnvObs
 
+from matterix.managers import ActionsCfg, EventsCfg, ObservationsCfg, MatterixBaseRecorderCfg
 from .matterix_base_env_cfg import MatterixBaseEnvCfg
 
 
@@ -104,19 +85,7 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         self.cfg = cfg
 
         self.setup_scene()
-
-        if self.cfg.record_path != None:
-
-            output_dir = os.path.dirname(self.cfg.record_path)
-            output_file_name = os.path.splitext(os.path.basename(self.cfg.record_path))[0]
-
-            if not os.path.exists(output_dir):
-                os.makedirs(output_dir)
-
-            self.cfg.recorders = MatterixBaseRecorderCfg()
-            self.cfg.recorders.dataset_export_dir_path = output_dir
-            self.cfg.recorders.dataset_filename = output_file_name
-            self.cfg.recorders.dataset_export_mode = DatasetExportMode.EXPORT_SUCCEEDED_ONLY
+        self.setup_recorder()
 
         # initialize the base class to setup the scene.
         super().__init__(cfg=cfg)
@@ -187,7 +156,9 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             "termination_manager": ManagerLiveVisualizer(manager=self.termination_manager),
             "reward_manager": ManagerLiveVisualizer(manager=self.reward_manager),
             "curriculum_manager": ManagerLiveVisualizer(manager=self.curriculum_manager),
-        }
+            "event_manager": ManagerLiveVisualizer(manager=self.event_manager),
+            "recorder_manager": ManagerLiveVisualizer(manager=self.recorder_manager),
+            }
 
     """
     Operations - MDP
@@ -355,8 +326,8 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             del self.reward_manager
             del self.termination_manager
             del self.curriculum_manager
-            # call the parent class to close the environment
-            super().close()
+        # call the parent class to close the environment
+        super().close()
 
     """
     Helper functions.
@@ -508,12 +479,15 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
                     setattr(events, f"{asset_name}_{term_name}", term)
 
     def setup_scene(self):
+        # it gets populated from the articulated assets, no need to add anything to cfg file by user
         self.cfg.actions = ActionsCfg()
-        self.cfg.events = EventCfg()
+        # it gets populated from the articulated assets, no need to add anything to cfg file by user 
+        self.cfg.events = EventsCfg() 
         self.cfg.scene = InteractiveSceneCfg(self.cfg.num_envs, self.cfg.env_spacing, self.cfg.replicate_physics)
-        # populate scene with asset configs
+        # populate scene with articulated asset configs
         for asset_name, asset_cfg in self.cfg.articulated_assets.items():
             setattr(self.cfg.scene, asset_name, asset_cfg)
+            # populate scene with sensors attached to the articulated assets
             for sensor_name, sensor_cfg in asset_cfg.sensors.items():
                 sensor_cfg.prim_path = asset_cfg.prim_path + sensor_cfg.prim_path
                 # sensor_cfg.visualizer_cfg.prim_path = asset_cfg.prim_path + sensor_cfg.visualizer_cfg.prim_path
@@ -521,6 +495,7 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
                     target.prim_path = asset_cfg.prim_path + target.prim_path
                 setattr(self.cfg.scene, sensor_name, sensor_cfg)
 
+        # populate scene with rigid asset configs
         for object_name, object_cfg in self.cfg.objects.items():
             setattr(self.cfg.scene, object_name, object_cfg)
 
@@ -541,3 +516,18 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             prim_path="/World/light",
             spawn=sim_utils.DomeLightCfg(color=(0.75, 0.75, 0.75), intensity=3000.0),
         )
+
+    def setup_recorder(self):
+        """Setup the recorder manager."""
+        if self.cfg.record_path != None:
+
+            output_dir = os.path.dirname(self.cfg.record_path)
+            output_file_name = os.path.splitext(os.path.basename(self.cfg.record_path))[0]
+
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+
+            self.cfg.recorders = MatterixBaseRecorderCfg()
+            self.cfg.recorders.dataset_export_dir_path = output_dir
+            self.cfg.recorders.dataset_filename = output_file_name
+            self.cfg.recorders.dataset_export_mode = DatasetExportMode.EXPORT_SUCCEEDED_ONLY
