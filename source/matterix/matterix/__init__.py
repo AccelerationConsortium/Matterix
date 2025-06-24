@@ -4,13 +4,11 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """
-Python module serving as a project/extension template.
+Python module serving as matterix project.
 """
 
 from .state_machine import *
 
-# Register Gym environments.
-from .tasks import *
+from .envs import *
 
-# Register UI extensions.
-from .ui_extension_example import *
+from .managers import *
