@@ -616,6 +616,5 @@ def remaining_time_s(env: ManagerBasedRLEnv) -> torch.Tensor:
 
 
 def force_data(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg = SceneEntityCfg("contact_sensor")):
-    sensor = env.scene.sensors[sensor_cfg.name]
-
+    
     return env.scene[sensor_cfg.name].data.net_forces_w
