@@ -33,13 +33,7 @@ class ObservationsCfg:
     @configclass
     class PolicyCfg(ObsGroup):
         """Observations for policy group with state values."""
-
-        actions = ObsTerm(func=mdp.last_action)
-        joint_pos = ObsTerm(func=mdp.joint_pos_rel)
-        joint_vel = ObsTerm(func=mdp.joint_vel_rel)
-        eef_pos = ObsTerm(func=mdp.ee_frame_pos)
-        eef_quat = ObsTerm(func=mdp.ee_frame_quat)
-        gripper_pos = ObsTerm(func=mdp.gripper_pos)
+        eef_pos = ObsTerm(func=mdp.ee_position)
 
         def __post_init__(self):
             self.enable_corruption = False
