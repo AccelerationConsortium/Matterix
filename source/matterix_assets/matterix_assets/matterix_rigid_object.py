@@ -12,10 +12,17 @@ from typing import Dict, List
 
 from isaaclab.assets import RigidObjectCfg
 from isaaclab.utils import configclass
+from isaaclab.sensors import FrameTransformerCfg
+from isaaclab.managers.event_manager import EventTermCfg
 
 
 @configclass
 class MatterixRigidObject(RigidObjectCfg):
     """Configuration parameters for an articulation."""
 
-    frames: dict[str, list[int]] = {}
+    event_terms: dict[str, EventTermCfg] = {}
+
+    frames: dict[str, list[int]] = {} # TODEL
+    sensors: dict[str, FrameTransformerCfg] = {}
+
+    semantic_tags: list[tuple] = []
