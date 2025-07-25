@@ -12,11 +12,12 @@ The following configurations are available:
 
 """
 
-from matterix_assets import MATTERIX_ASSETS_DATA_DIR
-
 import isaaclab.sim as sim_utils
 from isaaclab.assets import RigidObjectCfg
 from isaaclab.utils import configclass
+
+from matterix_assets import MATTERIX_ASSETS_DATA_DIR
+from ..matterix_rigid_object import MatterixRigidObjectCfg
 
 ##
 # Configuration
@@ -24,10 +25,10 @@ from isaaclab.utils import configclass
 
 
 @configclass
-class TABLE_THORLABS_75X90_INST_Cfg(RigidObjectCfg):
+class TABLE_THORLABS_75X90_INST_Cfg(MatterixRigidObjectCfg):
     """Properties for the table in the scene."""
 
-    prim_path = "{ENV_REGEX_NS}/infrastructure/tables"
+    prim_path += "/Infrastructure"
     translation = (0.0, 0.0, 0.0)  # The translation to apply to the prim w.r.t. its parent prim.
     orientation = (1.0, 0.0, 0.0, 0.0)  # The orientation in (w, x, y, z) to apply to the prim w.r.t. its parent prim.
     spawn = sim_utils.UsdFileCfg(
@@ -37,10 +38,10 @@ class TABLE_THORLABS_75X90_INST_Cfg(RigidObjectCfg):
 
 
 @configclass
-class TABLE_THORLABS_75X90_Cfg(RigidObjectCfg):
+class TABLE_THORLABS_75X90_Cfg(MatterixRigidObjectCfg):
     """Properties for the table in the scene."""
 
-    prim_path = "{ENV_REGEX_NS}/infrastructure/tables"
+    prim_path += "/Infrastructure"
     translation = (0.0, 0.0, 0.0)
     orientation = (1.0, 0.0, 0.0, 0.0)
     spawn = sim_utils.UsdFileCfg(

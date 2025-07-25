@@ -15,7 +15,7 @@ import os
 
 from isaacsim.core.version import get_version
 
-from isaaclab.assets import ArticulationCfg, AssetBaseCfg
+from isaaclab.assets import AssetBaseCfg
 import isaaclab.sim as sim_utils
 from isaaclab.envs.common import VecEnvStepReturn
 from isaaclab.envs.manager_based_env import ManagerBasedEnv
@@ -28,6 +28,8 @@ from isaacsim.core.simulation_manager import SimulationManager
 from isaaclab.envs.common import VecEnvObs
 
 from matterix.managers import ActionsCfg, EventsCfg, ObservationsCfg, MatterixBaseRecorderCfg
+from matterix_assets import MatterixArticulationCfg, MatterixRigidObjectCfg
+
 from .matterix_base_env_cfg import MatterixBaseEnvCfg
 
 
@@ -89,6 +91,7 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
 
         # initialize the base class to setup the scene.
         super().__init__(cfg=cfg)
+
         # store the render mode
         self.render_mode = render_mode
 
@@ -466,17 +469,21 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
 
     def add_action_terms(self, actions, scene):
         for asset_name, asset_cfg in scene.__dict__.items():
-            if isinstance(asset_cfg, ArticulationCfg):
+            if isinstance(asset_cfg, MatterixArticulationCfg):
                 for term_name, term in asset_cfg.action_terms.items():
                     term.asset_name = asset_name
-                    setattr(actions, f"{asset_name}_{term_name}", term)
+                    setattr(actions, f"Actions_{asset_name}_{term_name}", term)
 
     def add_event_terms(self, events, scene):
         for asset_name, asset_cfg in scene.__dict__.items():
-            if isinstance(asset_cfg, ArticulationCfg):
+            if isinstance(asset_cfg, MatterixArticulationCfg):
                 for term_name, term in asset_cfg.event_terms.items():
                     term.params["asset_cfg"] = SceneEntityCfg(asset_name)
-                    setattr(events, f"{asset_name}_{term_name}", term)
+                    setattr(events, f"Events_{asset_name}_{term_name}", term)
+            if isinstance(asset_cfg, MatterixRigidObjectCfg):
+                for term_name, term in asset_cfg.event_terms.items():
+                    term.params["asset_cfg"] = SceneEntityCfg(asset_name)
+                    setattr(events, f"Events_{asset_name}_{term_name}", term)
 
     def setup_scene(self):
         # it gets populated from the articulated assets, no need to add anything to cfg file by user
@@ -486,6 +493,7 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         self.cfg.scene = InteractiveSceneCfg(self.cfg.num_envs, self.cfg.env_spacing, self.cfg.replicate_physics)
         # populate scene with articulated asset configs
         for asset_name, asset_cfg in self.cfg.articulated_assets.items():
+            asset_cfg.prim_path += f"_{asset_name}"
             setattr(self.cfg.scene, asset_name, asset_cfg)
             # populate scene with sensors attached to the articulated assets
             for sensor_name, sensor_cfg in asset_cfg.sensors.items():
@@ -494,13 +502,16 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
                 for target in sensor_cfg.target_frames:
                     target.prim_path = asset_cfg.prim_path + target.prim_path
                 setattr(self.cfg.scene, sensor_name, sensor_cfg)
-
+        
         # populate scene with rigid asset configs
         for object_name, object_cfg in self.cfg.objects.items():
+            object_cfg.prim_path += f"_{object_name}"
             setattr(self.cfg.scene, object_name, object_cfg)
 
         for sensor_name, sensor_cfg in self.cfg.sensors.items():
+            sensor_cfg.prim_path += f"_{sensor_name}"
             setattr(self.cfg.scene, sensor_name, sensor_cfg)
+        print("[INFO] Scene Config: ", self.cfg.scene.to_dict())
 
         self.add_action_terms(self.cfg.actions, self.cfg.scene)
         self.add_event_terms(self.cfg.events, self.cfg.scene)
@@ -516,6 +527,7 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             prim_path="/World/light",
             spawn=sim_utils.DomeLightCfg(color=(0.75, 0.75, 0.75), intensity=3000.0),
         )
+
 
     def setup_recorder(self):
         """Setup the recorder manager."""

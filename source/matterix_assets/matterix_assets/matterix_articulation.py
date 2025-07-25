@@ -20,6 +20,10 @@ from isaaclab.utils import configclass
 @configclass
 class MatterixArticulationCfg(ArticulationCfg):
     """Configuration parameters for an articulation."""
+    pos: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    rot: tuple[float, float, float, float] = (1.0, 0.0, 0.0, 0.0)
+    
+    prim_path = "{ENV_REGEX_NS}/Articulations"
 
     action_terms: dict[str, ActionTermCfg] = {}
 
@@ -28,3 +32,11 @@ class MatterixArticulationCfg(ArticulationCfg):
     semantic_tags: list[tuple] = []
 
     sensors: dict[str, FrameTransformerCfg] = {}
+
+    def __post_init__(self):
+        if hasattr(super(), "__post_init__"):
+            super().__post_init__()
+
+        self.init_state.pos = self.pos
+        self.init_state.rot = self.rot
+

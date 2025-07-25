@@ -18,9 +18,10 @@ from isaaclab.managers import EventTermCfg
 from isaaclab.managers import RecorderManagerBaseCfg as DefaultEmptyRecorderManagerCfg
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sim import SimulationCfg
+from isaaclab.sensors import SensorBaseCfg
 from isaaclab.utils import configclass
 
-from matterix_assets import MatterixArticulationCfg, MatterixRigidObject
+from matterix_assets import MatterixArticulationCfg, MatterixRigidObjectCfg
 
 
 @configclass
@@ -183,13 +184,13 @@ class MatterixBaseEnvCfg:
 
     articulated_assets: dict[str, MatterixArticulationCfg] = {}
 
-    objects: dict[str, MatterixRigidObject] = {}
+    objects: dict[str, MatterixRigidObjectCfg] = {}
 
     particle_systems = {}
     reserved_fluids = None
     semantics = None
   
-    sensors = {}
+    sensors: dict[str, SensorBaseCfg] = {}
 
     num_envs = 1
     replicate_physics = False

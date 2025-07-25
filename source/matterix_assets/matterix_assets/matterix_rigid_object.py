@@ -17,8 +17,12 @@ from isaaclab.managers.event_manager import EventTermCfg
 
 
 @configclass
-class MatterixRigidObject(RigidObjectCfg):
-    """Configuration parameters for an articulation."""
+class MatterixRigidObjectCfg(RigidObjectCfg):
+    """Configuration parameters for a rigid object."""
+    pos: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    rot: tuple[float, float, float, float] = (1.0, 0.0, 0.0, 0.0)
+   
+    prim_path = "{ENV_REGEX_NS}/RigidObjects"
 
     event_terms: dict[str, EventTermCfg] = {}
 
@@ -26,3 +30,11 @@ class MatterixRigidObject(RigidObjectCfg):
     sensors: dict[str, FrameTransformerCfg] = {}
 
     semantic_tags: list[tuple] = []
+    
+    def __post_init__(self):
+        if hasattr(super(), "__post_init__"):
+            super().__post_init__()
+
+        self.init_state.pos = self.pos
+        self.init_state.rot = self.rot
+

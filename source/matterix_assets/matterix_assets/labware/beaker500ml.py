@@ -12,11 +12,12 @@ The following configurations are available:
 
 """
 
-from matterix_assets import MATTERIX_ASSETS_DATA_DIR
-
 import isaaclab.sim as sim_utils
 from isaaclab.assets import RigidObjectCfg
 from isaaclab.utils import configclass
+
+from matterix_assets import MATTERIX_ASSETS_DATA_DIR
+from ..matterix_rigid_object import MatterixRigidObjectCfg
 
 ##
 # Configuration
@@ -24,10 +25,10 @@ from isaaclab.utils import configclass
 
 
 @configclass
-class BEAKER_500ML_INST_CFG(RigidObjectCfg):
+class BEAKER_500ML_INST_CFG(MatterixRigidObjectCfg):
     """Properties for the beaker to manipulate in the scene."""
 
-    prim_path = "{ENV_REGEX_NS}/labware"
+    prim_path += "/Labware"
     init_state = RigidObjectCfg.InitialStateCfg(pos=(0.6, 0.1, 0.05))
     spawn = sim_utils.UsdFileCfg(
         usd_path=f"{MATTERIX_ASSETS_DATA_DIR}/labware/beaker500ml/beaker-500ml-inst.usda",
@@ -41,10 +42,10 @@ class BEAKER_500ML_INST_CFG(RigidObjectCfg):
 
 
 @configclass
-class BEAKER_500ML_CFG(RigidObjectCfg):
+class BEAKER_500ML_CFG(MatterixRigidObjectCfg):
     """Properties for the beaker to manipulate in the scene."""
 
-    prim_path = "{ENV_REGEX_NS}/labware"
+    prim_path += "/Labware"
     init_state = RigidObjectCfg.InitialStateCfg(pos=(0.6, 0.1, 0.05))
     spawn = sim_utils.UsdFileCfg(
         usd_path=f"{MATTERIX_ASSETS_DATA_DIR}/labware/beaker500ml/beaker-500ml.usda",
