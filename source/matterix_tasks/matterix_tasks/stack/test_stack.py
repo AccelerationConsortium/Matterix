@@ -10,7 +10,7 @@
 
 from matterix.envs import MatterixBaseEnvCfg
 from matterix_assets import MatterixRigidObjectCfg
-from matterix_assets.robots import FRANKA_PANDA_HIGH_PD_IK_CFG
+from matterix_assets.robots import FRANKA_PANDA_HIGH_PD_IK_CFG, FRANKA_PANDA_HIGH_PD_CFG
 
 from isaaclab.assets import AssetBaseCfg, RigidObjectCfg, ArticulationCfg
 
@@ -55,7 +55,7 @@ cube_properties = RigidBodyPropertiesCfg(
 
 @configclass
 class FrankaCubeStackEnvTestCfg(MatterixBaseEnvCfg):
-
+    env_spacing = 5.0
     objects = {
         # Set each stacking cube deterministically
         "object": MatterixRigidObjectCfg(
@@ -91,8 +91,8 @@ class FrankaCubeStackEnvTestCfg(MatterixBaseEnvCfg):
     }
 
     articulated_assets = {
-        "robot": FRANKA_PANDA_HIGH_PD_IK_CFG(),
-        "robot2": FRANKA_PANDA_HIGH_PD_IK_CFG(pos=[0, 2, 0]),
+        "robot": FRANKA_PANDA_HIGH_PD_CFG(),
+        "robot2": FRANKA_PANDA_HIGH_PD_CFG(pos=[0, 2, 0]),
     }
 
     observations = ObservationsCfg()

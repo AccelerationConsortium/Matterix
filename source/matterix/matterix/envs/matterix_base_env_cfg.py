@@ -192,7 +192,6 @@ class MatterixBaseEnvCfg:
   
     sensors: dict[str, SensorBaseCfg] = {}
 
-    num_envs = 1
     replicate_physics = False
     env_spacing = 2.5
 

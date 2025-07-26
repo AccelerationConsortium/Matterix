@@ -20,8 +20,8 @@ from isaaclab.utils import configclass
 @configclass
 class MatterixArticulationCfg(ArticulationCfg):
     """Configuration parameters for an articulation."""
-    pos: tuple[float, float, float] = (0.0, 0.0, 0.0)
-    rot: tuple[float, float, float, float] = (1.0, 0.0, 0.0, 0.0)
+    pos: tuple[float, float, float] = None
+    rot: tuple[float, float, float, float] = None
     
     prim_path = "{ENV_REGEX_NS}/Articulations"
 
@@ -36,7 +36,9 @@ class MatterixArticulationCfg(ArticulationCfg):
     def __post_init__(self):
         if hasattr(super(), "__post_init__"):
             super().__post_init__()
-
-        self.init_state.pos = self.pos
-        self.init_state.rot = self.rot
+            
+        if self.pos is not None:
+            self.init_state.pos = self.pos
+        if self.rot is not None:
+            self.init_state.rot = self.rot
 

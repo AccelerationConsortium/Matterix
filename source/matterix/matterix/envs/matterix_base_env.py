@@ -86,12 +86,17 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         self.common_step_counter = 0
         self.cfg = cfg
 
+        print("-------------------------------")
+        print("[INFO]: Initializing the environment...")
+        print("[INFO]: Number of environments ", self.cfg.scene.num_envs)
         self.setup_scene()
         self.setup_recorder()
 
         # initialize the base class to setup the scene.
         super().__init__(cfg=cfg)
 
+        print("[INFO]: Number of environments ", self.cfg.scene.num_envs)
+        print("-------------------------------")
         # store the render mode
         self.render_mode = render_mode
 
@@ -433,12 +438,8 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             env_ids = torch.arange(self.num_envs, dtype=torch.int64, device=self.device)
 
         if self.recorder_manager is not None:
+            # trigger recorder terms for pre-reset calls
             self.recorder_manager.record_pre_reset(env_ids, force_export_or_skip=False)
-            self.recorder_manager.set_success_to_episodes(
-                env_ids, torch.tensor([[True]], dtype=torch.bool, device=self.device)
-            )
-            self.recorder_manager.export_episodes(env_ids)
-        # trigger recorder terms for pre-reset calls
 
         # set the seed
         if seed is not None:
@@ -490,7 +491,7 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         self.cfg.actions = ActionsCfg()
         # it gets populated from the articulated assets, no need to add anything to cfg file by user 
         self.cfg.events = EventsCfg() 
-        self.cfg.scene = InteractiveSceneCfg(self.cfg.num_envs, self.cfg.env_spacing, self.cfg.replicate_physics)
+        self.cfg.scene = InteractiveSceneCfg(self.cfg.scene.num_envs, self.cfg.env_spacing, self.cfg.replicate_physics)
         # populate scene with articulated asset configs
         for asset_name, asset_cfg in self.cfg.articulated_assets.items():
             asset_cfg.prim_path += f"_{asset_name}"
@@ -511,7 +512,6 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         for sensor_name, sensor_cfg in self.cfg.sensors.items():
             sensor_cfg.prim_path += f"_{sensor_name}"
             setattr(self.cfg.scene, sensor_name, sensor_cfg)
-        print("[INFO] Scene Config: ", self.cfg.scene.to_dict())
 
         self.add_action_terms(self.cfg.actions, self.cfg.scene)
         self.add_event_terms(self.cfg.events, self.cfg.scene)
