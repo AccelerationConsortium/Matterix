@@ -6,8 +6,6 @@
 from isaaclab.utils import configclass
 from isaaclab.managers.recorder_manager import RecorderManagerBaseCfg, RecorderTerm, RecorderTermCfg
 from typing import Sequence
-
-
 @configclass
 class ActionsCfg:
     """Action specifications for the MDP."""

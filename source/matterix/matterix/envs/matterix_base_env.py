@@ -499,6 +499,7 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             # populate scene with sensors attached to the articulated assets
             for sensor_name, sensor_cfg in asset_cfg.sensors.items():
                 sensor_cfg.prim_path = asset_cfg.prim_path + sensor_cfg.prim_path
+                sensor_name = f"{sensor_name}/{asset_name}"
 
                 for target in sensor_cfg.target_frames:
                     target.prim_path = asset_cfg.prim_path + target.prim_path

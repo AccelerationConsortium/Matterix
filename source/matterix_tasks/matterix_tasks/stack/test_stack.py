@@ -24,6 +24,9 @@ from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
 from matterix.envs import mdp
 from matterix_assets import MatterixRigidObjectCfg
+
+from isaaclab.managers import SceneEntityCfg
+
 ##
 # Pre-defined configs
 ##
@@ -34,7 +37,7 @@ class ObservationsCfg:
     @configclass
     class PolicyCfg(ObsGroup):
         """Observations for policy group with state values."""
-        eef_pos = ObsTerm(func=mdp.ee_position)
+        ee_pos_robot = ObsTerm(func=mdp.ee_position, params={"asset_name": "robot"})
 
         def __post_init__(self):
             self.enable_corruption = False

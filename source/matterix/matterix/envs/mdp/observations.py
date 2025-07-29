@@ -30,7 +30,16 @@ def force_data(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg = SceneEntityC
     return env.scene[sensor_cfg.name].data.net_forces_w
 
 
-def ee_position(env: "ManagerBasedEnv", asset_cfg: SceneEntityCfg = SceneEntityCfg("ee_frame")) -> torch.Tensor:
+def ee_position(env: "ManagerBasedEnv", asset_name: str) -> torch.Tensor:
+    print("ee_position called")
+    print(f"asset_name: {asset_name}")
+    try:
+        asset_cfg = SceneEntityCfg(f"ee_frame/{asset_name}")
+    except ValueError:
+        # If the asset name does not match the expected format, assume it's a full path
+        raise ValueError(f"[Error] for the asset {asset_name}, there is no ee_frame sensor defined.")
+    # print("env.scene", env.scene)
+    print(f"asset_cfg name: {asset_cfg.name}")
     ee_frame: FrameTransformer = env.scene[asset_cfg.name]
     return ee_frame.data.target_pos_w[..., 0, :]
 

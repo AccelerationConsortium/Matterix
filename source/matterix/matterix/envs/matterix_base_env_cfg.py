@@ -67,7 +67,7 @@ class MatterixBaseEnvCfg:
       creation is deterministic and behaves similarly across different runs.
     """
 
-    decimation: int = MISSING
+    decimation: int = 5
     """Number of control action updates @ sim dt per policy dt.
 
     For instance, if the simulation dt is 0.01s and the policy dt is 0.1s, then the decimation is 10.
@@ -192,20 +192,26 @@ class MatterixBaseEnvCfg:
   
     sensors: dict[str, SensorBaseCfg] = {}
 
+    # general settings
     replicate_physics = False
     env_spacing = 2.5
+    dt = 0.01
+
+    # physX settings
+    bounce_threshold_velocity = 0.01
+    gpu_found_lost_aggregate_pairs_capacity = 1024 * 1024 * 4
+    gpu_total_aggregate_pairs_capacity = 16 * 1024
+    friction_correlation_distance = 0.00625
+
 
     def __post_init__(self):
         """Post initialization."""
-        # general settings
-        self.decimation = 5
-        self.episode_length_s = 30.0
         # simulation settings
-        self.sim.dt = 0.01  # 100Hz
+        self.sim.dt = self.dt  # 100Hz
         self.sim.render_interval = self.decimation
-
-        self.sim.physx.bounce_threshold_velocity = 0.2
-        self.sim.physx.bounce_threshold_velocity = 0.01
-        self.sim.physx.gpu_found_lost_aggregate_pairs_capacity = 1024 * 1024 * 4
-        self.sim.physx.gpu_total_aggregate_pairs_capacity = 16 * 1024
-        self.sim.physx.friction_correlation_distance = 0.00625
+        
+        # physX settings
+        self.sim.physx.bounce_threshold_velocity = self.bounce_threshold_velocity
+        self.sim.physx.gpu_found_lost_aggregate_pairs_capacity = self.gpu_found_lost_aggregate_pairs_capacity
+        self.sim.physx.gpu_total_aggregate_pairs_capacity = self.gpu_total_aggregate_pairs_capacity
+        self.sim.physx.friction_correlation_distance = self.friction_correlation_distance
