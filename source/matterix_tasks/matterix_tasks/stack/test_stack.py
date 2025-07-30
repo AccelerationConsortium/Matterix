@@ -38,6 +38,8 @@ class ObservationsCfg:
     class PolicyCfg(ObsGroup):
         """Observations for policy group with state values."""
         ee_pos_robot = ObsTerm(func=mdp.ee_position, params={"asset_name": "robot"})
+        ee_pos_robot2 = ObsTerm(func=mdp.ee_position, params={"asset_name": "robot2"})
+
 
         def __post_init__(self):
             self.enable_corruption = False

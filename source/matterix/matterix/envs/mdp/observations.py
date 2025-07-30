@@ -25,32 +25,26 @@ if TYPE_CHECKING:
 
 
 
-def force_data(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg = SceneEntityCfg("contact_sensor")):
-    
-    return env.scene[sensor_cfg.name].data.net_forces_w
+def force_data(env: ManagerBasedRLEnv, asset_name: str ):
+    sensor_name = SceneEntityCfg(f"contact_sensor/{asset_name}")
+    return env.scene[sensor_name].data.net_forces_w
 
 
 def ee_position(env: "ManagerBasedEnv", asset_name: str) -> torch.Tensor:
-    print("ee_position called")
-    print(f"asset_name: {asset_name}")
-    try:
-        asset_cfg = SceneEntityCfg(f"ee_frame/{asset_name}")
-    except ValueError:
-        # If the asset name does not match the expected format, assume it's a full path
-        raise ValueError(f"[Error] for the asset {asset_name}, there is no ee_frame sensor defined.")
-    # print("env.scene", env.scene)
-    print(f"asset_cfg name: {asset_cfg.name}")
-    ee_frame: FrameTransformer = env.scene[asset_cfg.name]
+    ee_frame_name = f"ee_frame/{asset_name}"
+    ee_frame: FrameTransformer = env.scene[ee_frame_name]
     return ee_frame.data.target_pos_w[..., 0, :]
 
-def ee_euler_xyz(env: "ManagerBasedEnv", asset_cfg: SceneEntityCfg = SceneEntityCfg("ee_frame")) -> torch.Tensor:
-    ee_frame: FrameTransformer = env.scene[asset_cfg.name]
+def ee_euler_xyz(env: "ManagerBasedEnv", asset_name: str) -> torch.Tensor:
+    ee_frame_name = f"ee_frame/{asset_name}"
+    ee_frame: FrameTransformer = env.scene[ee_frame_name]
     ee_quat = ee_frame.data.target_quat_w[..., 0, :]
     roll, pitch, yaw = euler_xyz_from_quat(ee_quat)
     return torch.stack([roll, pitch, yaw], dim=-1)
 
 
-def object_euler_xyz(env: "ManagerBasedEnv", asset_cfg: SceneEntityCfg) -> torch.Tensor:
-    obj = env.scene[asset_cfg.name]
+def object_euler_xyz(env: "ManagerBasedEnv", asset_name: str) -> torch.Tensor:
+    obj_name = f"{asset_name}"
+    obj = env.scene[obj_name]
     roll, pitch, yaw = euler_xyz_from_quat(obj.data.root_quat_w)
     return torch.stack([roll, pitch, yaw], dim=-1) 

@@ -48,12 +48,11 @@ class PreStepActionsRecorder(RecorderTerm):
         return "actions", self._env.action_manager.action
 
 
-class PreStepFlatPolicyObservationsRecorder(RecorderTerm):
-    """Recorder term that records the policy group observations in each step."""
+class PreStepObservationsRecorder(RecorderTerm):
+    """Recorder term that records the observations in each step."""
 
     def record_pre_step(self):
-        print(self._env.obs_buf)
-        return "obs", self._env.obs_buf["policy"]
+        return "obs", self._env.obs_buf
     
 @configclass
 class InitialStateRecorderCfg(RecorderTermCfg):
@@ -77,10 +76,10 @@ class PreStepActionsRecorderCfg(RecorderTermCfg):
 
 
 @configclass
-class PreStepFlatPolicyObservationsRecorderCfg(RecorderTermCfg):
+class PreStepObservationsRecorderCfg(RecorderTermCfg):
     """Configuration for the step policy observation recorder term."""
 
-    class_type: type[RecorderTerm] = PreStepFlatPolicyObservationsRecorder
+    class_type: type[RecorderTerm] = PreStepObservationsRecorder
 
 
 ##
@@ -95,7 +94,4 @@ class MatterixBaseRecorderCfg(RecorderManagerBaseCfg):
     record_initial_state = InitialStateRecorderCfg()
     record_post_step_states = PostStepStatesRecorderCfg()
     record_pre_step_actions = PreStepActionsRecorderCfg()
-    record_pre_step_flat_policy_observations = PreStepFlatPolicyObservationsRecorderCfg()
-
-
-
+    record_pre_step_observations = PreStepObservationsRecorderCfg()
