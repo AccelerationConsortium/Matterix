@@ -22,22 +22,46 @@ import sys
 PROJECT_DIR = pathlib.Path(__file__).parents[2]
 """Path to the the project directory."""
 
+
+def parse_args(required=False):
+    parser = argparse.ArgumentParser(description="Setup the VSCode settings for the project.")
+    parser.add_argument(
+        "--isaacsim_path", type=str, required=required, help="The absolute path to the Isaac Sim installation."
+    )
+    parser.add_argument("--isaaclab_path", type=str, required=required, help="Absolute path to Isaac Lab")
+    return parser.parse_args()
+
+
 try:
     import isaacsim  # noqa: F401
 
     isaacsim_dir = os.environ.get("ISAAC_PATH", "")
-except ModuleNotFoundError or ImportError:
-    # Create a parser to get the isaac-sim path
-    parser = argparse.ArgumentParser(description="Setup the VSCode settings for the project.")
-    parser.add_argument("--isaac_path", type=str, help="The absolute path to the Isaac Sim installation.")
-    args = parser.parse_args()
+    isaaclab_dir = os.environ.get("ISAACLAB_PATH", "")
 
-    # parse the isaac-sim directory
-    isaacsim_dir = args.isaac_path
+    if not isaacsim_dir or not isaaclab_dir:
+        args = parse_args(required=False)  # parse optional args only if needed
+
+        if not isaacsim_dir:
+            isaacsim_dir = args.isaacsim_path or isaacsim_dir
+        if not isaaclab_dir:
+            isaaclab_dir = args.isaaclab_path or isaaclab_dir
+
+
+except ModuleNotFoundError or ImportError:
+    args = parse_args(required=True)  # require args if import fails
+    isaacsim_dir = args.isaacsim_path
+    isaaclab_dir = args.isaaclab_path
+
     # check if the isaac-sim directory is provided
     if not os.path.exists(isaacsim_dir):
         raise FileNotFoundError(
             f"Could not find the isaac-sim directory: {isaacsim_dir}. Please provide the correct path to the Isaac Sim"
+            " installation."
+        )
+    # check if the isaac-lab directory is provided
+    if not os.path.exists(isaaclab_dir):
+        raise FileNotFoundError(
+            f"Could not find the isaac-lab directory: {isaaclab_dir}. Please provide the correct path to the Isaac Lab"
             " installation."
         )
 except EOFError:
@@ -58,6 +82,17 @@ if not os.path.exists(isaacsim_dir):
 
 ISAACSIM_DIR = isaacsim_dir
 """Path to the isaac-sim directory."""
+
+# check if the isaac-lab directory exists
+if not os.path.exists(isaaclab_dir):
+    raise FileNotFoundError(
+        f"Could not find the isaac-lab directory: {isaaclab_dir}. There are two possible reasons for this:"
+        "\n\t1. The Isaac Lab directory does not exist as provided CLI path or env var."
+        "\n\t2. The 'isaaclab' Python package is not installed or misconfigured.\n"
+        "\nPlease make sure that the Isaac Lab directory exists or that the 'isaaclab' package is installed."
+    )
+ISAACLAB_DIR = isaaclab_dir
+"""Path to the isaac-lab directory."""
 
 
 def overwrite_python_analysis_extra_paths(isaaclab_settings: str) -> str:
@@ -110,9 +145,18 @@ def overwrite_python_analysis_extra_paths(isaaclab_settings: str) -> str:
             "\n\tWe are working on a fix for this issue with the Isaac Sim team."
         )
 
+    # Add Isaac Lab source folder paths (assuming extensions/modules in "source" folder)
+    isaaclab_extensions = os.listdir(os.path.join(ISAACLAB_DIR, "source"))
+    path_names.extend([
+        '"${workspaceFolder}/'
+        + os.path.relpath(os.path.join(ISAACLAB_DIR, "source", ext), PROJECT_DIR).replace("\\", "/")
+        + '"'
+        for ext in isaaclab_extensions
+    ])
+
     # add the path names that are in the matterix extensions directory
-    isaaclab_extensions = os.listdir(os.path.join(PROJECT_DIR, "source"))
-    path_names.extend(['"${workspaceFolder}/source/' + ext + '"' for ext in isaaclab_extensions])
+    matterix_extensions = os.listdir(os.path.join(PROJECT_DIR, "source"))
+    path_names.extend(['"${workspaceFolder}/source/' + ext + '"' for ext in matterix_extensions])
 
     # combine them into a single string
     path_names = ",\n\t\t".expandtabs(4).join(path_names)

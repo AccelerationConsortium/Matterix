@@ -16,8 +16,61 @@ set -e
 tabs 4
 
 # get source directory
-export ISAACLAB_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-export MATTERIX_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+#export ISAACLAB_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+#export MATTERIX_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+# !/usr/bin/env bash
+#!/bin/bash
+
+# Get current source path
+CURRENT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+EXPORT_LINE="export MATTERIX_PATH=\"$CURRENT_PATH\""
+
+# Function to check if the exact export line exists
+line_exists_in_file() {
+    local file="$1"
+    local line="$2"
+    grep -Fqx "$line" "$file"
+}
+
+# Function to append to bashrc if the exact line is not present
+add_to_bashrc() {
+    local BASHRC="$HOME/.bashrc"
+
+    if line_exists_in_file "$BASHRC" "$EXPORT_LINE"; then
+        echo "MATTERIX_PATH already correctly set in $BASHRC. Not modifying it."
+    else
+        echo "$EXPORT_LINE" >> "$BASHRC"
+        echo "Added MATTERIX_PATH to $BASHRC"
+        echo "To activate it now, run: export MATTERIX_PATH=\"$CURRENT_PATH\""
+    fi
+}
+
+# Function to append to a .bat file for Git Bash on Windows
+add_to_bat() {
+    local BATRC="$HOME/_matterix_env.bat"
+    local SET_LINE="set MATTERIX_PATH=$CURRENT_PATH"
+
+    if [ -f "$BATRC" ] && grep -Fqx "$SET_LINE" "$BATRC"; then
+        echo "MATTERIX_PATH already set in $BATRC. Not modifying it."
+    else
+        echo "$SET_LINE" >> "$BATRC"
+        echo "Added MATTERIX_PATH to $BATRC"
+        echo "To activate it in Git Bash, run: source $BATRC"
+    fi
+}
+
+# Detect OS and act accordingly
+UNAME="$(uname)"
+if [[ "$UNAME" == "Linux" || "$UNAME" == "Darwin" ]]; then
+    add_to_bashrc
+elif [[ "$UNAME" == MINGW* || "$UNAME" == MSYS* || "$UNAME" == CYGWIN* ]]; then
+    add_to_bat
+else
+    echo "Unsupported OS: $UNAME"
+    exit 1
+fi
+
 
 #==
 # Helper functions

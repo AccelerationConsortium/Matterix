@@ -6,5 +6,4 @@
 ##
 # Configuration for different assets.
 ##
-
 from .franka_arms import *

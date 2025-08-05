@@ -8,7 +8,7 @@
 import os
 import toml
 
-from setuptools import setup
+from setuptools import find_packages, setup
 
 # Obtain the extension data from the extension.toml file
 EXTENSION_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -17,24 +17,35 @@ EXTENSION_TOML_DATA = toml.load(os.path.join(EXTENSION_PATH, "config", "extensio
 
 # Minimum dependencies required prior to installation
 INSTALL_REQUIRES = [
-    # NOTE: Add dependencies
-    "psutil",
+    # generic
+    "numpy",
+    "torch==2.5.1",
+    "torchvision>=0.14.1",  # ensure compatibility with torch 1.13.1
+    # 5.26.0 introduced a breaking change, so we restricted it for now.
+    # See issue https://github.com/tensorflow/tensorboard/issues/6808 for details.
+    "protobuf>=3.20.2, < 5.0.0",
+    # basic logger
+    "tensorboard",
+    # automate
+    "scikit-learn",
 ]
+
+PYTORCH_INDEX_URL = ["https://download.pytorch.org/whl/cu118"]
 
 # Installation operation
 setup(
     name="matterix_tasks",
-    packages=["matterix_tasks"],
     author="Matterix Project Developers",
     maintainer="Matterix Project Developers",
     url=EXTENSION_TOML_DATA["package"]["repository"],
     version=EXTENSION_TOML_DATA["package"]["version"],
     description=EXTENSION_TOML_DATA["package"]["description"],
     keywords=EXTENSION_TOML_DATA["package"]["keywords"],
-    install_requires=INSTALL_REQUIRES,
-    license="MIT",
     include_package_data=True,
     python_requires=">=3.10",
+    install_requires=INSTALL_REQUIRES,
+    dependency_links=PYTORCH_INDEX_URL,
+    packages=find_packages(),
     classifiers=[
         "Natural Language :: English",
         "Programming Language :: Python :: 3.10",

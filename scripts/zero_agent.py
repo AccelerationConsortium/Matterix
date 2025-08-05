@@ -32,7 +32,7 @@ simulation_app = app_launcher.app
 import gymnasium as gym
 import torch
 
-import matterix.tasks  # noqa: F401
+import matterix_tasks  # noqa: F401
 
 import isaaclab_tasks  # noqa: F401
 from isaaclab_tasks.utils import parse_env_cfg
@@ -45,7 +45,15 @@ def main():
         args_cli.task, device=args_cli.device, num_envs=args_cli.num_envs, use_fabric=not args_cli.disable_fabric
     )
     # create environment
+    print("=============================================")
+    print("[INFO]: Environment created successfully.")
+    print("env_cfg num_envs:", env_cfg.scene.num_envs)
+    print("args_cli num_envs:", args_cli.num_envs)
+
     env = gym.make(args_cli.task, cfg=env_cfg)
+    print("env_cfg num_envs:", env_cfg.scene.num_envs)
+    print("args_cli num_envs:", args_cli.num_envs)
+    print("=============================================")
 
     # print info (this is vectorized environment)
     print(f"[INFO]: Gym observation space: {env.observation_space}")
@@ -59,7 +67,8 @@ def main():
             # compute zero actions
             actions = torch.zeros(env.action_space.shape, device=env.unwrapped.device)
             # apply actions
-            env.step(actions)
+            observations, reward, terminated, truncated, info = env.step(actions)
+            print("[zero agent] observations:", observations)
 
     # close the simulator
     env.close()
