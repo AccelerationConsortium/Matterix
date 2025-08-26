@@ -3,32 +3,36 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 from __future__ import annotations
-from re import L
-import torch
-from collections.abc import Sequence
+
 import gymnasium as gym
 import math
+
 # needed to import for allowing type-hinting: np.ndarray | None
 import numpy as np
-from typing import Any, ClassVar
 import os
+import torch
+from collections.abc import Sequence
+from typing import Any, ClassVar
 
+from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.version import get_version
+from matterix_assets import MatterixArticulationCfg, MatterixRigidObjectCfg, MatterixStaticObjectCfg
 
-from isaaclab.assets import AssetBaseCfg
 import isaaclab.sim as sim_utils
-from isaaclab.envs.common import VecEnvStepReturn
+from isaaclab.assets import AssetBaseCfg
+from isaaclab.envs.common import VecEnvObs, VecEnvStepReturn
 from isaaclab.envs.manager_based_env import ManagerBasedEnv
-from isaaclab.managers import CommandManager, CurriculumManager, RewardManager, SceneEntityCfg, TerminationManager
+from isaaclab.managers import (
+    CommandManager,
+    CurriculumManager,
+    DatasetExportMode,
+    RewardManager,
+    SceneEntityCfg,
+    TerminationManager,
+)
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sim.spawners.from_files.from_files_cfg import GroundPlaneCfg
 from isaaclab.ui.widgets import ManagerLiveVisualizer
-from isaaclab.managers import DatasetExportMode
-from isaacsim.core.simulation_manager import SimulationManager
-from isaaclab.envs.common import VecEnvObs
-
-from matterix.managers import ActionsCfg, EventsCfg, ObservationsCfg, MatterixBaseRecorderCfg
-from matterix_assets import MatterixArticulationCfg, MatterixRigidObjectCfg
 
 from .matterix_base_env_cfg import MatterixBaseEnvCfg
 
@@ -166,7 +170,7 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             "curriculum_manager": ManagerLiveVisualizer(manager=self.curriculum_manager),
             "event_manager": ManagerLiveVisualizer(manager=self.event_manager),
             "recorder_manager": ManagerLiveVisualizer(manager=self.recorder_manager),
-            }
+        }
 
     """
     Operations - MDP
@@ -481,16 +485,12 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
                 for term_name, term in asset_cfg.event_terms.items():
                     term.params["asset_cfg"] = SceneEntityCfg(asset_name)
                     setattr(events, f"Events_{asset_name}_{term_name}", term)
-            if isinstance(asset_cfg, MatterixRigidObjectCfg):
+            if isinstance(asset_cfg, MatterixRigidObjectCfg | MatterixStaticObjectCfg):
                 for term_name, term in asset_cfg.event_terms.items():
                     term.params["asset_cfg"] = SceneEntityCfg(asset_name)
                     setattr(events, f"Events_{asset_name}_{term_name}", term)
 
     def setup_scene(self):
-        # it gets populated from the articulated assets, no need to add anything to cfg file by user
-        self.cfg.actions = ActionsCfg()
-        # it gets populated from the articulated assets, no need to add anything to cfg file by user 
-        self.cfg.events = EventsCfg() 
         self.cfg.scene = InteractiveSceneCfg(self.cfg.scene.num_envs, self.cfg.env_spacing, self.cfg.replicate_physics)
         # populate scene with articulated asset configs
         for asset_name, asset_cfg in self.cfg.articulated_assets.items():
@@ -499,16 +499,24 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             # populate scene with sensors attached to the articulated assets
             for sensor_name, sensor_cfg in asset_cfg.sensors.items():
                 sensor_cfg.prim_path = asset_cfg.prim_path + sensor_cfg.prim_path
-                sensor_name = f"{sensor_name}/{asset_name}"
+                sensor_name = f"{sensor_name}_{asset_name}"
 
                 for target in sensor_cfg.target_frames:
                     target.prim_path = asset_cfg.prim_path + target.prim_path
                 setattr(self.cfg.scene, sensor_name, sensor_cfg)
-        
+
         # populate scene with rigid asset configs
-        for object_name, object_cfg in self.cfg.objects.items():
-            object_cfg.prim_path += f"_{object_name}"
-            setattr(self.cfg.scene, object_name, object_cfg)
+        for asset_name, asset_cfg in self.cfg.objects.items():
+            asset_cfg.prim_path += f"_{asset_name}"
+            setattr(self.cfg.scene, asset_name, asset_cfg)
+            # populate scene with sensors attached to the articulated assets
+            for sensor_name, sensor_cfg in asset_cfg.sensors.items():
+                sensor_cfg.prim_path = asset_cfg.prim_path + sensor_cfg.prim_path
+                sensor_name = f"{sensor_name}_{asset_name}"
+
+                for target in sensor_cfg.target_frames:
+                    target.prim_path = asset_cfg.prim_path + target.prim_path
+                setattr(self.cfg.scene, sensor_name, sensor_cfg)
 
         for sensor_name, sensor_cfg in self.cfg.sensors.items():
             sensor_cfg.prim_path += f"_{sensor_name}"
@@ -529,10 +537,9 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             spawn=sim_utils.DomeLightCfg(color=(0.75, 0.75, 0.75), intensity=3000.0),
         )
 
-
     def setup_recorder(self):
         """Setup the recorder manager."""
-        if self.cfg.record_path != None:
+        if self.cfg.record_path is not None:
 
             output_dir = os.path.dirname(self.cfg.record_path)
             output_file_name = os.path.splitext(os.path.basename(self.cfg.record_path))[0]
@@ -540,7 +547,6 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
 
-            self.cfg.recorders = MatterixBaseRecorderCfg()
             self.cfg.recorders.dataset_export_dir_path = output_dir
             self.cfg.recorders.dataset_filename = output_file_name
             self.cfg.recorders.dataset_export_mode = DatasetExportMode.EXPORT_SUCCEEDED_ONLY

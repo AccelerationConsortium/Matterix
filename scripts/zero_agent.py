@@ -49,11 +49,8 @@ def main():
     print("[INFO]: Environment created successfully.")
     print("env_cfg num_envs:", env_cfg.scene.num_envs)
     print("args_cli num_envs:", args_cli.num_envs)
-    
+
     env = gym.make(args_cli.task, cfg=env_cfg)
-    print("env_cfg num_envs:", env_cfg.scene.num_envs)
-    print("args_cli num_envs:", args_cli.num_envs)
-    print("=============================================")
 
     # print info (this is vectorized environment)
     print(f"[INFO]: Gym observation space: {env.observation_space}")
@@ -67,7 +64,8 @@ def main():
             # compute zero actions
             actions = torch.zeros(env.action_space.shape, device=env.unwrapped.device)
             # apply actions
-            env.step(actions)
+            observations, reward, terminated, truncated, info = env.step(actions)
+            print("[zero agent] observations:", observations)
 
     # close the simulator
     env.close()

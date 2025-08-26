@@ -9,12 +9,15 @@ The following configurations are available:
 
 * :obj:`TABLE_THORLABS_75X90_INST_Cfg`: Instantiated Thorlabs 75x90cm table
 * :obj:`TABLE_THORLABS_75X90_Cfg`:  Thorlabs 75x90cm table
-
+* :obj:`TABLE_SEATTLE_INST_Cfg`: Instantiated Seattle lab table
 """
 
-import isaaclab.sim as sim_utils
-from isaaclab.assets import RigidObjectCfg
+from matterix_assets import MATTERIX_ASSETS_DATA_DIR
+
 from isaaclab.utils import configclass
+from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
+
+from ..matterix_static_object import MatterixStaticObjectCfg
 
 from matterix_assets import MATTERIX_ASSETS_DATA_DIR
 from ..matterix_rigid_object import MatterixRigidObjectCfg
@@ -23,28 +26,39 @@ from ..matterix_rigid_object import MatterixRigidObjectCfg
 # Configuration
 ##
 
-
-@configclass
-class TABLE_THORLABS_75X90_INST_Cfg(MatterixRigidObjectCfg):
-    """Properties for the table in the scene."""
-
-    prim_path += "/Infrastructure"
-    translation = (0.0, 0.0, 0.0)  # The translation to apply to the prim w.r.t. its parent prim.
-    orientation = (1.0, 0.0, 0.0, 0.0)  # The orientation in (w, x, y, z) to apply to the prim w.r.t. its parent prim.
-    spawn = sim_utils.UsdFileCfg(
-        usd_path=f"{MATTERIX_ASSETS_DATA_DIR}/infrastructure/tables/table-thorlabs-75x90/table-inst.usda",
-        scale=(1.0, 1.0, 1.0),
-    )
+default_prim_path = MatterixStaticObjectCfg().prim_path + "_Infrastructure"
 
 
 @configclass
-class TABLE_THORLABS_75X90_Cfg(MatterixRigidObjectCfg):
+class TABLE_THORLABS_75X90_INST_Cfg(MatterixStaticObjectCfg):
     """Properties for the table in the scene."""
 
-    prim_path += "/Infrastructure"
-    translation = (0.0, 0.0, 0.0)
-    orientation = (1.0, 0.0, 0.0, 0.0)
-    spawn = sim_utils.UsdFileCfg(
-        usd_path=f"{MATTERIX_ASSETS_DATA_DIR}/infrastructure/tables/table-thorlabs-75x90/table.usda",
-        scale=(1.0, 1.0, 1.0),
-    )
+    prim_path = default_prim_path  # User-defined object name is appended to the default prim path
+    usd_path = f"{MATTERIX_ASSETS_DATA_DIR}/infrastructure/tables/table-thorlabs-75x90/table-inst.usda"
+    scale = (1.0, 1.0, 1.0)  # Default scale for the asset
+
+    semantic_tags = [("class", "table")]
+
+
+@configclass
+class TABLE_THORLABS_75X90_Cfg(MatterixStaticObjectCfg):
+    """Properties for the table in the scene."""
+
+    prim_path = default_prim_path
+    usd_path = f"{MATTERIX_ASSETS_DATA_DIR}/infrastructure/tables/table-thorlabs-75x90/table.usda"
+    scale = (1.0, 1.0, 1.0)
+
+    semantic_tags = [("class", "table")]
+
+
+@configclass
+class TABLE_SEATTLE_INST_Cfg(MatterixStaticObjectCfg):
+    """Properties for the table in the scene."""
+
+    prim_path = default_prim_path
+    usd_path = f"{ISAAC_NUCLEUS_DIR}/Props/Mounts/SeattleLabTable/table_instanceable.usd"
+    scale = (1.0, 1.0, 1.0)
+
+    rot = (0.707, 0, 0, 0.707)  # 90 degrees around y-axis
+
+    semantic_tags = [("class", "table")]

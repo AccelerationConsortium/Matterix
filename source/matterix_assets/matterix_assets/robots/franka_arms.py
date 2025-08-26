@@ -233,7 +233,7 @@ class FRANKA_PANDA_CFG(MatterixArticulationCfg):
                     prim_path="/panda_hand",
                     name="end_effector",
                     offset=OffsetCfg(
-                        pos=[0.0, 0.0, 0.1034],
+                        pos=(0.0, 0.0, 0.1034),
                     ),
                 ),
             ],
@@ -279,7 +279,7 @@ class FRANKA_PANDA_HIGH_PD_IK_CFG(FRANKA_PANDA_CFG):
             joint_names=["panda_joint.*"],
             body_name="panda_hand",
             controller=DifferentialIKControllerCfg(command_type="pose", use_relative_mode=False, ik_method="dls"),
-            body_offset=DifferentialInverseKinematicsActionCfg.OffsetCfg(pos=[0.0, 0.0, 0.107]),
+            body_offset=DifferentialInverseKinematicsActionCfg.OffsetCfg(pos=(0.0, 0.0, 0.107)),
         ),
         "gripper_action": mdp.BinaryJointPositionActionCfg(
             joint_names=["panda_finger.*"],

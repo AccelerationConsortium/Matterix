@@ -8,6 +8,9 @@ import os
 import toml
 
 from .constants import MATTERIX_ASSETS_DATA_DIR, MATTERIX_ASSETS_EXT_DIR
+from .infrastructure import *
+from .labware import *
 from .matterix_articulation import MatterixArticulationCfg
 from .matterix_rigid_object import MatterixRigidObjectCfg
+from .matterix_static_object import MatterixStaticObjectCfg
 from .robots import *

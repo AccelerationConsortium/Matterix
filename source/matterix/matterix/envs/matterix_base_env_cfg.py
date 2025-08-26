@@ -11,28 +11,15 @@ configuring the environment instances, viewer settings, and simulation parameter
 
 from dataclasses import MISSING
 
-import isaaclab.envs.mdp as mdp
+from matterix.managers import ActionManagerCfg, DefaultEventManagerCfg, MatterixBaseRecorderCfg, ObservationManagerCfg
+from matterix_assets import MatterixArticulationCfg, MatterixRigidObjectCfg, MatterixStaticObjectCfg
+
 from isaaclab.envs.common import ViewerCfg
 from isaaclab.envs.ui import BaseEnvWindow
-from isaaclab.managers import EventTermCfg
-from isaaclab.managers import RecorderManagerBaseCfg as DefaultEmptyRecorderManagerCfg
 from isaaclab.scene import InteractiveSceneCfg
-from isaaclab.sim import SimulationCfg
 from isaaclab.sensors import SensorBaseCfg
+from isaaclab.sim import SimulationCfg
 from isaaclab.utils import configclass
-
-from matterix_assets import MatterixArticulationCfg, MatterixRigidObjectCfg
-
-
-@configclass
-class DefaultEventManagerCfg:
-    """Configuration of the default event manager.
-
-    This manager is used to reset the scene to a default state. The default state is specified
-    by the scene configuration.
-    """
-
-    reset_scene_to_default = EventTermCfg(func=mdp.reset_scene_to_default, mode="reset")
 
 
 @configclass
@@ -81,20 +68,20 @@ class MatterixBaseEnvCfg:
     Please refer to the :class:`isaaclab.scene.InteractiveSceneCfg` class for more details.
     """
 
-    recorders: object = DefaultEmptyRecorderManagerCfg()
+    recorders: MatterixBaseRecorderCfg = MatterixBaseRecorderCfg()
     """Recorder settings. Defaults to recording nothing.
 
     Please refer to the :class:`isaaclab.managers.RecorderManager` class for more details.
     """
-    record_path : str = None
+    record_path: str = None
 
-    observations: object = MISSING
+    observations: object = ObservationManagerCfg()
     """Observation space settings.
 
     Please refer to the :class:`isaaclab.managers.ObservationManager` class for more details.
     """
 
-    actions: object = MISSING
+    actions: object = ActionManagerCfg()
     """Action space settings.
 
     Please refer to the :class:`isaaclab.managers.ActionManager` class for more details.
@@ -184,12 +171,11 @@ class MatterixBaseEnvCfg:
 
     articulated_assets: dict[str, MatterixArticulationCfg] = {}
 
-    objects: dict[str, MatterixRigidObjectCfg] = {}
+    objects: dict[str, MatterixRigidObjectCfg | MatterixStaticObjectCfg] = {}
 
     particle_systems = {}
     reserved_fluids = None
     semantics = None
-  
     sensors: dict[str, SensorBaseCfg] = {}
 
     # general settings
@@ -203,13 +189,11 @@ class MatterixBaseEnvCfg:
     gpu_total_aggregate_pairs_capacity = 16 * 1024
     friction_correlation_distance = 0.00625
 
-
     def __post_init__(self):
         """Post initialization."""
         # simulation settings
         self.sim.dt = self.dt  # 100Hz
         self.sim.render_interval = self.decimation
-        
         # physX settings
         self.sim.physx.bounce_threshold_velocity = self.bounce_threshold_velocity
         self.sim.physx.gpu_found_lost_aggregate_pairs_capacity = self.gpu_found_lost_aggregate_pairs_capacity

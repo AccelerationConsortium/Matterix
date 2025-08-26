@@ -25,7 +25,9 @@ PROJECT_DIR = pathlib.Path(__file__).parents[2]
 
 def parse_args(required=False):
     parser = argparse.ArgumentParser(description="Setup the VSCode settings for the project.")
-    parser.add_argument("--isaacsim_path", type=str, required=required, help="The absolute path to the Isaac Sim installation.")
+    parser.add_argument(
+        "--isaacsim_path", type=str, required=required, help="The absolute path to the Isaac Sim installation."
+    )
     parser.add_argument("--isaaclab_path", type=str, required=required, help="Absolute path to Isaac Lab")
     return parser.parse_args()
 
@@ -90,6 +92,10 @@ if not os.path.exists(isaaclab_dir):
     )
 ISAACLAB_DIR = isaaclab_dir
 """Path to the isaac-lab directory."""
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin
 
 def overwrite_python_analysis_extra_paths(isaaclab_settings: str) -> str:
     """Overwrite the python.analysis.extraPaths in the matterix settings file.
@@ -144,9 +150,9 @@ def overwrite_python_analysis_extra_paths(isaaclab_settings: str) -> str:
     # Add Isaac Lab source folder paths (assuming extensions/modules in "source" folder)
     isaaclab_extensions = os.listdir(os.path.join(ISAACLAB_DIR, "source"))
     path_names.extend([
-        '"${workspaceFolder}/' + 
-        os.path.relpath(os.path.join(ISAACLAB_DIR, "source", ext), PROJECT_DIR).replace("\\", "/") + 
-        '"' 
+        '"${workspaceFolder}/'
+        + os.path.relpath(os.path.join(ISAACLAB_DIR, "source", ext), PROJECT_DIR).replace("\\", "/")
+        + '"'
         for ext in isaaclab_extensions
     ])
 

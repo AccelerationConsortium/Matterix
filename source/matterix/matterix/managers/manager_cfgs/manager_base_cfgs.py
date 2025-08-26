@@ -3,22 +3,47 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from isaaclab.utils import configclass
+from collections.abc import Sequence
+
+import isaaclab.envs.mdp as mdp
+from isaaclab.managers import EventTermCfg
 from isaaclab.managers.recorder_manager import RecorderManagerBaseCfg, RecorderTerm, RecorderTermCfg
-from typing import Sequence
-@configclass
-class ActionsCfg:
-    """Action specifications for the MDP."""
+from isaaclab.utils import configclass
 
 
 @configclass
-class EventsCfg:
-    """Configuration for events."""
+class ActionManagerCfg:
+    """Configuration of the action manager for the MDP.
+
+    The terms of this manager will be populated with the actions added to the environment and the assets in the scene.
+    """
 
 
 @configclass
-class ObservationsCfg:
-    """Observation specifications for the MDP."""
+class EventManagerCfg:
+    """Configuration of the event manager for the MDP.
+
+    The terms of this manager will be populated with the events added to the environment and the assets in the scene.
+    """
+
+
+@configclass
+class DefaultEventManagerCfg(EventManagerCfg):
+    """Configuration of the default event manager for the MDP.
+
+    This manager is used to reset the scene to a default state. The default state is specified
+    by the scene configuration.
+    """
+
+    reset_scene_to_default = EventTermCfg(func=mdp.reset_scene_to_default, mode="reset")
+
+
+@configclass
+class ObservationManagerCfg:
+    """Configuration of the observattion manager for the MDP.
+
+    The terms of this manager will be populated with the events added to the environment and the assets in the scene.
+    """
 
 
 class InitialStateRecorder(RecorderTerm):
@@ -53,7 +78,8 @@ class PreStepObservationsRecorder(RecorderTerm):
 
     def record_pre_step(self):
         return "obs", self._env.obs_buf
-    
+
+
 @configclass
 class InitialStateRecorderCfg(RecorderTermCfg):
     """Configuration for the initial state recorder term."""

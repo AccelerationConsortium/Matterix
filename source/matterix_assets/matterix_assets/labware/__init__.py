@@ -7,4 +7,4 @@
 # Configuration for different assets.
 ##
 
-from .beaker500ml import *
+from .beakers import *

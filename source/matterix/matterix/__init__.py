@@ -7,8 +7,6 @@
 Python module serving as matterix project.
 """
 
-from .state_machine import *
 
 from .envs import *
-
 from .managers import *

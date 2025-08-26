@@ -11,16 +11,13 @@
 from dataclasses import MISSING
 
 import isaaclab.sim as sim_utils
-from isaaclab.assets import RigidObjectCfg
+from isaaclab.assets import AssetBaseCfg
 from isaaclab.managers.event_manager import EventTermCfg
 from isaaclab.sensors import FrameTransformerCfg, OffsetCfg
 from isaaclab.utils import configclass
 
 from isaaclab.markers.config import FRAME_MARKER_CFG  # isort: skip
 
-##
-# Configuration
-##
 
 marker_cfg = FRAME_MARKER_CFG.copy()
 marker_cfg.markers["frame"].scale = (0.03, 0.03, 0.03)
@@ -28,21 +25,18 @@ marker_cfg.prim_path = "/Visuals/FrameTransformer"
 
 
 @configclass
-class MatterixRigidObjectCfg(RigidObjectCfg):
+class MatterixStaticObjectCfg(AssetBaseCfg):
     """Configuration parameters for a rigid object."""
 
-    # defined by the user in the scene description
     pos: tuple[float, float, float] | None = None  # default value is (0.0, 0.0, 0.0)
     # Quaternion rotation (w, x, y, z)
     rot: tuple[float, float, float, float] | None = None  # default value is (1.0, 0.0, 0.0, 0.0)
 
     # defined by the user for each rigid object
-    prim_path = "{ENV_REGEX_NS}/RigidObjects"
+    prim_path = "{ENV_REGEX_NS}/StaticObjects"
 
     usd_path: str = MISSING
     scale: tuple[float, float, float] | None = None
-    mass: float | None = None
-    activate_contact_sensors: bool = False
 
     event_terms: dict[str, EventTermCfg] = {}
 
@@ -54,14 +48,10 @@ class MatterixRigidObjectCfg(RigidObjectCfg):
     def __post_init__(self):
         if hasattr(super(), "__post_init__"):
             super().__post_init__()
-        # spawn configuration
+
         self.spawn = sim_utils.UsdFileCfg(
             usd_path=self.usd_path,
-            mass_props=sim_utils.MassPropertiesCfg(mass=self.mass),  # kg
-            rigid_props=sim_utils.RigidBodyPropertiesCfg(),
-            collision_props=sim_utils.CollisionPropertiesCfg(),
             scale=self.scale,
-            activate_contact_sensors=self.activate_contact_sensors,
         )
 
         # initial state configuration

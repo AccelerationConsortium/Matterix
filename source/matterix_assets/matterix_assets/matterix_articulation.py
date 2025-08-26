@@ -8,7 +8,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from typing import Dict
 
 from isaaclab.assets.articulation import ArticulationCfg
 from isaaclab.managers.action_manager import ActionTermCfg
@@ -20,9 +19,10 @@ from isaaclab.utils import configclass
 @configclass
 class MatterixArticulationCfg(ArticulationCfg):
     """Configuration parameters for an articulation."""
+
     pos: tuple[float, float, float] = None
     rot: tuple[float, float, float, float] = None
-    
+
     prim_path = "{ENV_REGEX_NS}/Articulations"
 
     action_terms: dict[str, ActionTermCfg] = {}
@@ -36,9 +36,7 @@ class MatterixArticulationCfg(ArticulationCfg):
     def __post_init__(self):
         if hasattr(super(), "__post_init__"):
             super().__post_init__()
-            
         if self.pos is not None:
             self.init_state.pos = self.pos
         if self.rot is not None:
             self.init_state.rot = self.rot
-
