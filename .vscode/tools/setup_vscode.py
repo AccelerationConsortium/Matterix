@@ -92,10 +92,6 @@ if not os.path.exists(isaaclab_dir):
     )
 ISAACLAB_DIR = isaaclab_dir
 """Path to the isaac-lab directory."""
-<<<<<<< HEAD
-=======
-
->>>>>>> origin
 
 def overwrite_python_analysis_extra_paths(isaaclab_settings: str) -> str:
     """Overwrite the python.analysis.extraPaths in the matterix settings file.
