@@ -195,8 +195,6 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env, WorkflowEnv):
         Returns:
             A tuple containing the observations, rewards, resets (terminated and truncated) and extras.
         """
-        print("STEP CALLED")
-        print(action)
         # process actions
         self.action_manager.process_action(action.to(self.device))
 
