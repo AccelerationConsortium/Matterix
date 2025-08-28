@@ -7,10 +7,10 @@ import torch
 from typing import Tuple
 
 from .compositional_action import CompositionalAction
-
+from .workflow_env import WorkflowEnv
 
 class StateMachine:
-    def __init__(self, env):
+    def __init__(self, env: WorkflowEnv, device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")):
         """
         Args:
             env: The underlying environment that supports parallel execution
@@ -18,7 +18,7 @@ class StateMachine:
         print(env)
         self.env = env
         self.num_envs = env.num_envs
-        self.device = env.unwrapped.device
+        self.device = device
 
         # State machine tracking
         self.current_action_idx = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
@@ -33,7 +33,6 @@ class StateMachine:
         """Reset the environment and action state"""
         # TODO: Add independent resets (would need to update actions with specific new positions usually)
         #       Maybe action can have a function attached, so that it calculates in real time (like obs terms)
-        self.obs_dict = self.env.reset()[0]
         self.current_action_idx = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.action_sequence_success = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
         self.action_sequence_failure = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
@@ -43,7 +42,6 @@ class StateMachine:
         for action in self.actions:
             action.reset()
 
-        return self.obs_dict
 
     def set_action_sequence(self, actions):
         """
@@ -52,8 +50,8 @@ class StateMachine:
         Args:
             actions: List of Action objects to execute in sequence
         """
-        for _ in range(15):  # let physics settle
-            self.env.sim.step(render=False)
+        # for _ in range(15):  # let physics settle
+        #     self.env.sim.step(render=False)
         self.actions = []
         # Reset all actions
         for action in actions:
@@ -123,6 +121,11 @@ class StateMachine:
             action = self.actions[action_idx]
             action_values, action_success, action_failure = action.compute_action(self.env, action_env_ids)
 
+            # Ensure tensors on self.device
+            action_values = action_values.to(self.device)
+            action_success = action_success.to(self.device)
+            action_failure = action_failure.to(self.device)
+
             # Update combined action and done masks
             self.combined_action[action_env_ids] = action_values
             combined_success[action_env_ids] = action_success
@@ -131,20 +134,11 @@ class StateMachine:
 
             self.action_sequence_failure = self.action_sequence_failure | action_failure
 
-        # Step the environment ONCE with the combined actions
-        self.obs_dict = self.env.step(self.combined_action)[0]
-
+        #
         # Update action indices only for environments that completed their current action
         self.current_action_idx[combined_success] += 1
 
         # Mark environments as done if they've completed all actions
         self.action_sequence_success = self.action_sequence_success | (self.current_action_idx >= len(self.actions))
 
-        return self.obs_dict, self.action_sequence_success
-
-    def close(self):
-        self.env.close()
-
-    @property
-    def unwrapped(self):
-        return self.env.unwrapped
+        return self.combined_action

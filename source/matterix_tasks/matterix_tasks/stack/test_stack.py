@@ -8,98 +8,54 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from matterix.envs import MatterixBaseEnvCfg
-from matterix_assets import MatterixRigidObjectCfg
-from matterix_assets.robots import FRANKA_PANDA_HIGH_PD_IK_CFG, FRANKA_PANDA_HIGH_PD_CFG
 
-from isaaclab.assets import AssetBaseCfg, RigidObjectCfg, ArticulationCfg
+from matterix.envs import MatterixBaseEnvCfg, mdp
+from matterix_assets.infrastructure.tables import TABLE_SEATTLE_INST_Cfg, TABLE_THORLABS_75X90_INST_Cfg
+from matterix_assets.labware.beakers import BEAKER_500ML_INST_CFG
+from matterix_assets.robots import FRANKA_PANDA_HIGH_PD_CFG, FRANKA_PANDA_HIGH_PD_IK_CFG
 
-from isaaclab.sim.schemas.schemas_cfg import RigidBodyPropertiesCfg
-from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
-from isaaclab.utils import configclass
-from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
-
-from matterix.envs import MatterixBaseEnvCfg
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
-from matterix.envs import mdp
-from matterix_assets import MatterixRigidObjectCfg
+from isaaclab.utils import configclass
 
-from isaaclab.managers import SceneEntityCfg
 
 ##
-# Pre-defined configs
+# Observation configs
 ##
 @configclass
-class ObservationsCfg:
+class ObservationManagerCfg:
     """Observation specifications for the MDP."""
 
     @configclass
     class PolicyCfg(ObsGroup):
         """Observations for policy group with state values."""
-        ee_pos_robot = ObsTerm(func=mdp.ee_position, params={"asset_name": "robot"})
-        ee_pos_robot2 = ObsTerm(func=mdp.ee_position, params={"asset_name": "robot2"})
 
+        ee_pos_robot = ObsTerm(func=mdp.ee_env_pos, params={"asset_name": "robot"})
 
         def __post_init__(self):
             self.enable_corruption = False
             self.concatenate_terms = False
 
     policy: PolicyCfg = PolicyCfg()
-    
-
-cube_properties = RigidBodyPropertiesCfg(
-    solver_position_iteration_count=16,
-    solver_velocity_iteration_count=1,
-    max_angular_velocity=1000.0,
-    max_linear_velocity=1000.0,
-    max_depenetration_velocity=5.0,
-    disable_gravity=False,
-)
 
 
+##
+# Test Development Environment configs
+# Environment with multiple agents (robots), multiple beakers, and tables.
+##
 @configclass
 class FrankaCubeStackEnvTestCfg(MatterixBaseEnvCfg):
     env_spacing = 5.0
+
     objects = {
-        # Set each stacking cube deterministically
-        "object": MatterixRigidObjectCfg(
-            prim_path="{ENV_REGEX_NS}/Object",
-            init_state=RigidObjectCfg.InitialStateCfg(pos=[0.5, 0, 0.055], rot=[1, 0, 0, 0]),
-            spawn=UsdFileCfg(
-                usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd",
-                scale=(0.8, 0.8, 0.8),
-                rigid_props=cube_properties,
-            ),
-            frames={"pre_grasp": [0, 0, 0.1], "grasp": [0, 0, 0], "post_grasp": [0, 0, 0.1]},
-        ),
-        "object2": MatterixRigidObjectCfg(
-            prim_path="{ENV_REGEX_NS}/Object",
-            init_state=RigidObjectCfg.InitialStateCfg(pos=[0.6, 0.1, 0.055], rot=[1, 0, 0, 0]),
-            spawn=UsdFileCfg(
-                usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd",
-                scale=(0.8, 0.8, 0.8),
-                rigid_props=cube_properties,
-            ),
-            frames={"pre_grasp": [0, 0, 0.1], "grasp": [0, 0, 0], "post_grasp": [0, 0, 0.1]},
-        ),
-        "table": AssetBaseCfg(
-            prim_path="{ENV_REGEX_NS}/Table",
-            init_state=AssetBaseCfg.InitialStateCfg(pos=[0.5, 0, 0], rot=[0.707, 0, 0, 0.707]),
-            spawn=UsdFileCfg(usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Mounts/SeattleLabTable/table_instanceable.usd"),
-        ),
-        "table2": AssetBaseCfg(
-            prim_path="{ENV_REGEX_NS}/Table",
-            init_state=AssetBaseCfg.InitialStateCfg(pos=[0.5, 2, 0], rot=[0.707, 0, 0, 0.707]),
-            spawn=UsdFileCfg(usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Mounts/SeattleLabTable/table_instanceable.usd"),
-        ),
+        "beaker": BEAKER_500ML_INST_CFG(pos=(0.6, 0.05, 0.05)),
+        "table": TABLE_SEATTLE_INST_Cfg(pos=(0.5, 0, 0)),
     }
 
     articulated_assets = {
-        "robot": FRANKA_PANDA_HIGH_PD_CFG(),
-        "robot2": FRANKA_PANDA_HIGH_PD_CFG(pos=[0, 2, 0]),
+        "robot": FRANKA_PANDA_HIGH_PD_IK_CFG(pos=(0.0, 0, 0)),  # robot arm with joint controller
     }
 
-    observations = ObservationsCfg()
+    observations = ObservationManagerCfg()
 
     record_path = "datasets/dataset.hdf5"

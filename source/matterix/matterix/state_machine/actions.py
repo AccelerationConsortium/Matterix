@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from typing import Tuple
 
 from isaaclab.utils.math import subtract_frame_transforms
-
+from .workflow_env import WorkflowEnv
 
 class Action(ABC):
     def __init__(
@@ -25,7 +25,7 @@ class Action(ABC):
         self.steps_taken = torch.zeros(num_envs, dtype=torch.int32, device=device)
 
     def _convert_world_to_base_frame(
-        self, env, env_ids: torch.Tensor, world_positions: torch.Tensor, world_orientations: torch.Tensor = None
+        self, env: WorkflowEnv, env_ids: torch.Tensor, world_positions: torch.Tensor, world_orientations: torch.Tensor = None
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Convert world frame poses to robot base frame poses.
@@ -41,23 +41,28 @@ class Action(ABC):
             - base_positions: Positions in robot base frame, shape (len(env_ids), 3)
             - base_orientations: Orientations in robot base frame, shape (len(env_ids), 4)
         """
-        env = env.unwrapped
-        root_pose_w = env.scene[self.asset].data.root_state_w[env_ids, :7]
+        if self.asset in env.objects:
+            pose = env.objects[self.asset].pose
+        else:
+            pose = env.robots[self.asset].pose
 
-        # Use identity quaternions if orientations not provided
+        # Ensure inputs are on self.device
+        world_positions = world_positions.to(self.device)
         if world_orientations is None:
             world_orientations = torch.zeros((len(env_ids), 4), device=self.device)
             world_orientations[:, 0] = 1.0  # Identity quaternion [1, 0, 0, 0] (w, x, y, z)
+        else:
+            world_orientations = world_orientations.to(self.device)
 
-        # Convert world poses to base frame using proper transform
+        # Convert world poses to base frame using proper transform (all on self.device)
         base_positions, base_orientations = subtract_frame_transforms(
-            root_pose_w[:, 0:3], root_pose_w[:, 3:7], world_positions, world_orientations
+            pose.position.to(self.device), pose.orientation.to(self.device), world_positions, world_orientations
         )
 
         return base_positions, base_orientations
 
     @abstractmethod
-    def _compute_action_impl(self, env, env_ids: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    def _compute_action_impl(self, env: WorkflowEnv, env_ids: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Compute the action values for environments that are not done.
 
@@ -72,7 +77,7 @@ class Action(ABC):
         """
         pass
 
-    def compute_action(self, env, env_ids: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    def compute_action(self, env: WorkflowEnv, env_ids: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         # Update steps and check timeout
         # TODO: Fail and finish at the same time should probably be a success (we already did the work, might as well mark it as success)
         self.steps_taken[env_ids] += 1
@@ -103,11 +108,11 @@ class Move(Action):
         """
         super().__init__(asset, num_envs, device, max_duration)
 
-        self.target_positions_w = target_positions_w
+        self.target_positions_w = target_positions_w.to(device)
         self.position_threshold = 0.01  # Distance threshold to consider target reached
         self.gripper_threshold = 0.001
 
-    def _compute_action_impl(self, env, env_ids: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    def _compute_action_impl(self, env: WorkflowEnv, env_ids: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         # Convert target positions from world frame to robot base frame (why do this computation each step?)
         target_positions_b, _ = self._convert_world_to_base_frame(env, env_ids, self.target_positions_w[env_ids])
 
@@ -122,21 +127,15 @@ class Move(Action):
         action[:, 6] = 0.0
 
         # We need to send some action to the gripper
-        # Our goal is not to have it do anything
-        # If it is fully open, we keep sending the open command
-        # In any other case if it is static it will the fully closed or holding onto something
-        # (as it can only be controlled by binary action)
-        # Therefore, we keep sending the close command
-        # We are doing this to avoid any memory in the system (remembering the last action)
-        gripper_pos = env.scene[self.asset].data.joint_pos[env_ids, -1]
+        gripper_pos = env.robots[self.asset].joint_positions.to(self.device)[env_ids, -1]
         open_gripper = gripper_pos >= 0.04 - self.gripper_threshold
         close_gripper = ~open_gripper
         action[open_gripper, 7] = 1.0
         action[close_gripper, 7] = -1.0
 
         # we assume the robot has a sensor for the ee_frame
-        ee_frame_sensor = env.unwrapped.scene["ee_frame"]
-        current_pos = ee_frame_sensor.data.target_pos_w[env_ids, 0, :].clone()
+        assert env.robots[self.asset].ee_position is not None
+        current_pos = env.robots[self.asset].ee_position[env_ids].to(self.device)  # type: ignore
 
         # TODO: Check if both of these are in full world and not env world frame
         distance = torch.norm(self.target_positions_w[env_ids] - current_pos, dim=1)
@@ -168,11 +167,11 @@ class MoveToFrame(Action):
         self.position_threshold = 0.01  # Distance threshold to consider target reached
         self.gripper_threshold = 0.001
 
-    def _compute_action_impl(self, env, env_ids: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    def _compute_action_impl(self, env: WorkflowEnv, env_ids: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         # Convert target positions from world frame to robot base frame
-        target_positions_w = env.unwrapped.scene[self.object].data.root_pos_w + torch.tensor(
-            env.unwrapped.scene[self.object].cfg.frames[self.frame], device=self.device
-        )
+        target_positions_w = env.objects[self.object].pose.position.to(self.device) + torch.as_tensor(
+            env.objects[self.object].frames[self.frame], device=self.device
+        ).unsqueeze(0)
         target_positions_b, _ = self._convert_world_to_base_frame(env, env_ids, target_positions_w[env_ids])
 
         # Create action tensor
@@ -186,21 +185,14 @@ class MoveToFrame(Action):
         action[:, 6] = 0.0
 
         # We need to send some action to the gripper
-        # Our goal is not to have it do anything
-        # If it is fully open, we keep sending the open command
-        # In any other case if it is static it will the fully closed or holding onto something
-        # (as it can only be controlled by binary action)
-        # Therefore, we keep sending the close command
-        # We are doing this to avoid any memory in the system (remembering the last action)
-        gripper_pos = env.scene[self.asset].data.joint_pos[env_ids, -1]
+        gripper_pos = env.robots[self.asset].joint_positions.to(self.device)[env_ids, -1]
         open_gripper = gripper_pos >= 0.04 - self.gripper_threshold
         close_gripper = ~open_gripper
         action[open_gripper, 7] = 1.0
         action[close_gripper, 7] = -1.0
 
         # we assume the robot has a sensor for the ee_frame
-        ee_frame_sensor = env.unwrapped.scene["ee_frame"]
-        current_pos = ee_frame_sensor.data.target_pos_w[env_ids, 0, :].clone()
+        current_pos = env.robots[self.asset].ee_position[env_ids].to(self.device)  # type: ignore
 
         # TODO: Check if both of these are in full world and not env world frame
         distance = torch.norm(target_positions_w[env_ids] - current_pos, dim=1)
@@ -231,10 +223,10 @@ class MoveRelative(Action):
         self.position_threshold = 0.01  # Distance threshold to consider target reached
         self.gripper_threshold = 0.001
 
-    def _compute_action_impl(self, env, env_ids: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    def _compute_action_impl(self, env: WorkflowEnv, env_ids: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         # Convert target positions from world frame to robot base frame
         if self.target_positions_w is None:
-            self.target_positions_w = env.unwrapped.scene["ee_frame"].data.target_pos_w[:, 0, :].clone() + torch.tensor(
+            self.target_positions_w = env.robots[self.asset].ee_position[env_ids].to(self.device) + torch.tensor(  # type: ignore
                 self.offset, device=self.device
             )
 
@@ -251,23 +243,14 @@ class MoveRelative(Action):
         action[:, 6] = 0.0
 
         # We need to send some action to the gripper
-        # Our goal is not to have it do anything
-        # If it is fully open, we keep sending the open command
-        # In any other case if it is static it will the fully closed or holding onto something
-        # (as it can only be controlled by binary action)
-        # Therefore, we keep sending the close command
-        # We are doing this to avoid any memory in the system (remembering the last action)
-
-        gripper_pos = env.scene[self.asset].data.joint_pos[env_ids, -1]
+        gripper_pos = env.robots[self.asset].joint_positions.to(self.device)[env_ids, -1]
         open_gripper = gripper_pos >= 0.04 - self.gripper_threshold
         close_gripper = ~open_gripper
         action[open_gripper, 7] = 1.0
         action[close_gripper, 7] = -1.0
 
         # we assume the robot has a sensor for the ee_frame
-        ee_frame_sensor = env.unwrapped.scene["ee_frame"]
-        current_pos = ee_frame_sensor.data.target_pos_w[env_ids, 0, :].clone()
-
+        current_pos = env.robots[self.asset].ee_position[env_ids].to(self.device)  # type: ignore
         # TODO: Check if both of these are in full world and not env world frame
         distance = torch.norm(self.target_positions_w[env_ids] - current_pos, dim=1)
         new_done = distance < self.position_threshold
@@ -288,13 +271,12 @@ class GripperAction(Action):
         self.target_value = target_value
         self.duration = duration
 
-    def _compute_action_impl(self, env, env_ids: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    def _compute_action_impl(self, env: WorkflowEnv, env_ids: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         # Create action tensor
         action = torch.zeros((env_ids.shape[0], 8), device=self.device)
 
         # Get current end effector position in world frame and convert to base frame
-        env = env.unwrapped
-        ee_pos_w = env.scene["ee_frame"].data.target_pos_w[env_ids, 0, :]
+        ee_pos_w = env.robots[self.asset].ee_position[env_ids].to(self.device)  # type: ignore
         ee_pos_b, _ = self._convert_world_to_base_frame(env, env_ids, ee_pos_w)
 
         action[:, 0:3] = ee_pos_b

@@ -6,20 +6,18 @@
 import torch
 
 from .actions import * # noqa: F403
-
+from .workflow_env import WorkflowEnv
 
 class CompositionalAction:
 
     def __init__(
         self,
         asset="robot",
-        num_envs: int = 1,
         device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu"),
         max_duration: int = 100,
     ):
         self.actions_list = []
         self.asset = asset
-        self.num_envs = num_envs
         self.device = (device,)
         self.max_duration = max_duration
 
@@ -33,14 +31,13 @@ class PickObject(CompositionalAction):
         self,
         object,
         asset="robot",
-        num_envs: int = 1,
         device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu"),
         max_duration: int = 100,
     ):
-        super().__init__(asset, num_envs, device, max_duration)
+        super().__init__(asset, device, max_duration)
         self.object = object
 
-    def initialize(self, env):
+    def initialize(self, env: WorkflowEnv):
         self.actions_list = [
             MoveToFrame(
                 object=self.object,

@@ -12,14 +12,14 @@ import numpy as np
 import os
 import torch
 from collections.abc import Sequence
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Dict, Mapping, Sequence, Tuple, Optional
 
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.version import get_version
 from matterix_assets import MatterixArticulationCfg, MatterixRigidObjectCfg, MatterixStaticObjectCfg
 
 import isaaclab.sim as sim_utils
-from isaaclab.assets import AssetBaseCfg
+from isaaclab.assets import AssetBaseCfg, Articulation
 from isaaclab.envs.common import VecEnvObs, VecEnvStepReturn
 from isaaclab.envs.manager_based_env import ManagerBasedEnv
 from isaaclab.managers import (
@@ -35,9 +35,9 @@ from isaaclab.sim.spawners.from_files.from_files_cfg import GroundPlaneCfg
 from isaaclab.ui.widgets import ManagerLiveVisualizer
 
 from .matterix_base_env_cfg import MatterixBaseEnvCfg
+from ..state_machine import WorkflowEnv, Pose, ObjectState, RobotState
 
-
-class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
+class MatterixBaseEnv(ManagerBasedEnv, gym.Env, WorkflowEnv):
     """The superclass for the manager-based workflow reinforcement learning-based environments.
 
     This class inherits from :class:`ManagerBasedEnv` and implements the core functionality for
@@ -195,6 +195,8 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         Returns:
             A tuple containing the observations, rewards, resets (terminated and truncated) and extras.
         """
+        print("STEP CALLED")
+        print(action)
         # process actions
         self.action_manager.process_action(action.to(self.device))
 
@@ -550,3 +552,50 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             self.cfg.recorders.dataset_export_dir_path = output_dir
             self.cfg.recorders.dataset_filename = output_file_name
             self.cfg.recorders.dataset_export_mode = DatasetExportMode.EXPORT_SUCCEEDED_ONLY
+
+    @property
+    def objects(self) -> Mapping[str, ObjectState]:
+        """
+        Mapping: object name -> ObjectState (pose in local frame).
+        Must be cheap to read (cache or compute-once-per-step as needed).
+        """
+        objects = {}
+        for object_key in self.scene.keys():
+            object = self.scene[object_key]
+            if hasattr(object, "data") and hasattr(object.data, "root_state_w") and not isinstance(object, Articulation):
+                object_positions = object.data.root_state_w[:, :3] - self.scene.env_origins
+                object_orientations = object.data.root_state_w[:, 3: 7]
+                objects[object_key] = ObjectState(
+                                        pose = Pose(
+                                            position = object_positions, 
+                                            orientation = object_orientations
+                                    ),
+                                        frames = object.cfg.frames
+                                    )
+        return objects
+    
+    @property
+    def robots(self) -> Mapping[str, RobotState]:
+        """
+        Mapping: robot name -> RobotState (base pose + joint positions in local frame).
+        """
+        robots = {}
+        for asset_key in self.scene.keys():
+            asset = self.scene[asset_key]
+            if hasattr(asset, "data") and hasattr(asset.data, "root_state_w") and isinstance(asset, Articulation):
+                robot_positions = asset.data.root_state_w[:, :3] - self.scene.env_origins
+                robot_orientations = asset.data.root_state_w[:, 3: 7]
+                robot_joint_positions = asset.data.joint_pos
+                try:
+                    robot_ee_pos = self.scene[f"ee_frame_{asset_key}"].data.target_pos_w[:, 0, :].clone() - self.scene.env_origins
+                except:
+                    robot_ee_pos = None
+                robots[asset_key] = RobotState(
+                                        pose = Pose(
+                                            position = robot_positions, 
+                                            orientation = robot_orientations
+                                    ),
+                                        joint_positions = robot_joint_positions,
+                                        ee_position = robot_ee_pos
+                                    )
+        return robots

@@ -67,17 +67,20 @@ def main():
     # reset environment at start
     _ = env.reset()
     sm = StateMachine(env)
+    action_sequence = [
+        PickObject(object="beaker", asset="robot", device=env.device),
+    ]
+    sm.set_action_sequence(action_sequence)
+
     while simulation_app.is_running():
         # run everything in inference mode
         with torch.inference_mode():
+            env.reset()
             sm.reset()
-
-            action_sequence = [
-                PickObject(object="object", asset="robot", num_envs=env.num_envs, device=env.device),
-            ]
-
-            action_sequence_success, _ = sm.execute_action_sequence(action_sequence)
-            print("action_sequence_success count:", action_sequence_success.sum().item())
+            while not (sm.action_sequence_success | sm.action_sequence_failure).all():
+                action = sm.step().to(env.device)
+                action[:, :3] += env.scene.env_origins
+                env.step(action.to(env.device))
 
     # close the environment
     env.close()
