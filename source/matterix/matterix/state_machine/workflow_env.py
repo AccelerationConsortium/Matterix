@@ -57,10 +57,3 @@ class WorkflowEnv(ABC):
         Mapping: robot name -> RobotState (base pose + joint positions in local frame).
         """
         raise NotImplementedError
-
-    def step(self, action : torch.Tensor):
-        """
-        Steps the environment
-        """
-        raise NotImplementedError
-    
