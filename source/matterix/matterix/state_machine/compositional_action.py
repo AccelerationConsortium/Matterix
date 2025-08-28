@@ -36,7 +36,7 @@ class PickObject(CompositionalAction):
     ):
         super().__init__(asset, device, max_duration)
         self.object = object
-
+        self.device = device
     def initialize(self, env: WorkflowEnv):
         self.actions_list = [
             MoveToFrame(
@@ -44,24 +44,24 @@ class PickObject(CompositionalAction):
                 frame="pre_grasp",
                 asset=self.asset,
                 num_envs=env.num_envs,
-                device=env.device,
+                device=self.device,
                 max_duration=self.max_duration,
             ),
-            OpenGripper(asset=self.asset, num_envs=env.num_envs, device=env.device),
+            OpenGripper(asset=self.asset, num_envs=env.num_envs, device=self.device),
             MoveToFrame(
                 object=self.object,
                 frame="grasp",
                 asset=self.asset,
                 num_envs=env.num_envs,
-                device=env.device,
+                device=self.device,
                 max_duration=self.max_duration,
             ),
-            CloseGripper(asset=self.asset, num_envs=env.num_envs, device=env.device),
+            CloseGripper(asset=self.asset, num_envs=env.num_envs, device=self.device),
             MoveRelative(
-                offset=env.unwrapped.scene[self.object].cfg.frames["post_grasp"],
+                offset=env.objects[self.object].frames["post_grasp"],
                 asset=self.asset,
                 num_envs=env.num_envs,
-                device=env.device,
+                device=self.device,
                 max_duration=self.max_duration,
             ),
         ]
