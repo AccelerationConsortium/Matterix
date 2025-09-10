@@ -8,7 +8,6 @@
 [![pre-commit](https://img.shields.io/github/actions/workflow/status/isaac-sim/IsaacLab/pre-commit.yaml?logo=pre-commit&logoColor=white&label=pre-commit&color=brightgreen)](https://github.com/isaac-sim/IsaacLab/actions/workflows/pre-commit.yaml)
 [![docs status](https://img.shields.io/github/actions/workflow/status/isaac-sim/IsaacLab/docs.yaml?label=docs&color=brightgreen)](https://github.com/isaac-sim/IsaacLab/actions/workflows/docs.yaml)
 [![License](https://img.shields.io/badge/license-BSD--3-yellow.svg)](https://opensource.org/licenses/BSD-3-Clause)
-[![License](https://img.shields.io/badge/license-Apache--2.0-yellow.svg)](https://opensource.org/license/apache-2-0)
 
 
 **Matterix** is a multi-scale, GPU-accelerated robotic simulation framework designed to create high-fidelity digital twins of chemistry labs, thus accelerating workflow development. This multi-scale digital twin simulates robotic physical manipulation, powder and liquid dynamics, device functionalities, heat transfer, and basic chemical reaction kinetics. This is enabled by integrating realistic physics simulation and photorealistic rendering with a modular GPU-accelerated semantics engine, which models logical states and continuous behaviors to simulate chemistry workflows across different levels of abstraction.
@@ -28,11 +27,14 @@ The key features of Matterix are:
 - Install Isaac Lab by following the [installation guide](https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/index.html).
   We recommend using the conda installation as it simplifies calling Python scripts from the terminal.
 
-- Clone or copy this project/repository separately from the Isaac Lab installation (i.e. outside the `IsaacLab` directory):
+- Install git lfs with `git lfs install`
+
+- Clone this project/repository separately from the Isaac Lab installation (i.e. outside the `IsaacLab` directory):
     ```bash
     # Matterix has submodules
-    git clone --recursive https://github.com/ac-rad/Matterix.git
+    git clone  --recurse-submodules https://github.com/ac-rad/Matterix.git
     cd Matterix
+    git submodule foreach 'git lfs pull'
     ```
 
 - If you are using the Isaac Sim python interpreter (i.e., **not** using Python venv or conda):
