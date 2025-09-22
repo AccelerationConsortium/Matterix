@@ -11,15 +11,36 @@ configuring the environment instances, viewer settings, and simulation parameter
 
 from dataclasses import MISSING
 
+from matterix.envs import mdp
 from matterix.managers import ActionManagerCfg, DefaultEventManagerCfg, MatterixBaseRecorderCfg, ObservationManagerCfg
+from matterix.particle_systems import ParticleSystemCfg, ReservedParticleCfg
 from matterix_assets import MatterixArticulationCfg, MatterixRigidObjectCfg, MatterixStaticObjectCfg
 
 from isaaclab.envs.common import ViewerCfg
 from isaaclab.envs.ui import BaseEnvWindow
+from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sensors import SensorBaseCfg
 from isaaclab.sim import SimulationCfg
+from isaaclab.sim.spawners.lights import DomeLightCfg, LightCfg
 from isaaclab.utils import configclass
+
+
+@configclass
+class LightStateCfg:
+    """Configuration of the environment lights."""
+
+    pos: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    rot: tuple[float, float, float, float] = (1.0, 0.0, 0.0, 0.0)
+    light: LightCfg = MISSING
+
+
+@configclass
+class TerminationsCfg:
+    """Termination terms for the MDP."""
+
+    # (1) Terminate if the episode length is exceeded
+    time_out = DoneTerm(func=mdp.time_out, time_out=True)
 
 
 @configclass
@@ -67,6 +88,11 @@ class MatterixBaseEnvCfg:
 
     Please refer to the :class:`isaaclab.scene.InteractiveSceneCfg` class for more details.
     """
+
+    # light
+    lights: dict[str, LightStateCfg] = {
+        "light": LightStateCfg(light=DomeLightCfg(color=(0.75, 0.75, 0.75), intensity=3000.0))
+    }
 
     recorders: MatterixBaseRecorderCfg = MatterixBaseRecorderCfg()
     """Recorder settings. Defaults to recording nothing.
@@ -136,7 +162,7 @@ class MatterixBaseEnvCfg:
     Please refer to the :class:`isaaclab.managers.RewardManager` class for more details.
     """
 
-    terminations: object = None
+    terminations: object = TerminationsCfg()
     """Termination settings.
 
     Please refer to the :class:`isaaclab.managers.TerminationManager` class for more details.
@@ -173,8 +199,10 @@ class MatterixBaseEnvCfg:
 
     objects: dict[str, MatterixRigidObjectCfg | MatterixStaticObjectCfg] = {}
 
-    particle_systems = {}
-    reserved_fluids = None
+    particle_systems: dict[str, ParticleSystemCfg] = {}
+
+    reserved_particle_systems: list[ReservedParticleCfg] | None = None
+
     semantics = None
 
     sensors: dict[str, SensorBaseCfg] = {}
@@ -182,7 +210,8 @@ class MatterixBaseEnvCfg:
     # general settings
     replicate_physics = False
     env_spacing = 2.5
-    dt = 0.01
+    dt: float = 1 / 60  # Hz
+    num_envs = 1
 
     # physX settings
     bounce_threshold_velocity = 0.01
@@ -192,8 +221,26 @@ class MatterixBaseEnvCfg:
 
     def __post_init__(self):
         """Post initialization."""
-        # simulation settings
-        self.sim.dt = self.dt  # 100Hz
+        # general settings
+        self.enable_particles = False
+        if self.particle_systems or self.reserved_particle_systems is not None:
+            self.enable_particles = True
+
+        if self.enable_particles:
+            from omni.physx import acquire_physx_interface
+
+            physx_interface = acquire_physx_interface()
+            physx_interface.overwrite_gpu_setting(1)
+
+            self.replicate_physics = True
+            self.dt = 1 / 300  # change default physics time step from 60Hz to 300Hz when using particle systems
+            self.sim.use_fabric = False
+            # self.sim.device = "cpu" # this variable gets overwritten in scripts when loading the cfg file and arguments
+            # so it is set in the base env class
+
+        # simulation settings based on the user input
+        if self.dt is not None:
+            self.sim.dt = self.dt  # 100Hz
         self.sim.render_interval = self.decimation
 
         # physX settings

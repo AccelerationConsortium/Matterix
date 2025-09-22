@@ -3,10 +3,4 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from .manager_base_cfgs import (
-    ActionManagerCfg,
-    DefaultEventManagerCfg,
-    EventManagerCfg,
-    MatterixBaseRecorderCfg,
-    ObservationManagerCfg,
-)
+from .manager_base_cfgs import *

@@ -14,7 +14,7 @@ from isaaclab.app import AppLauncher
 # add argparse arguments
 parser = argparse.ArgumentParser(description="Random agent for matterix environments.")
 parser.add_argument(
-    "--disable_fabric", action="store_true", default=False, help="Disable fabric and use USD I/O operations."
+    "--disable_fabric", action="store_true", default=None, help="Disable fabric and use USD I/O operations."
 )
 parser.add_argument("--num_envs", type=int, default=None, help="Number of environments to simulate.")
 parser.add_argument("--task", type=str, default=None, help="Name of the task.")
@@ -41,9 +41,10 @@ from isaaclab_tasks.utils import parse_env_cfg
 def main():
     """Random actions agent with matterix environment."""
     # create environment configuration
-    env_cfg = parse_env_cfg(
-        args_cli.task, device=args_cli.device, num_envs=args_cli.num_envs, use_fabric=not args_cli.disable_fabric
-    )
+    use_fabric = None if args_cli.disable_fabric is None else not args_cli.disable_fabric
+    # in case the environment has particle systems, we overwrite the device cfg. this is done in the base env class.
+    env_cfg = parse_env_cfg(args_cli.task, device=args_cli.device, num_envs=args_cli.num_envs, use_fabric=use_fabric)
+
     # create environment
     env = gym.make(args_cli.task, cfg=env_cfg)
 

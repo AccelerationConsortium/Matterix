@@ -7,7 +7,7 @@ import gymnasium as gym
 
 from . import mdp
 from .matterix_base_env import MatterixBaseEnv
-from .matterix_base_env_cfg import MatterixBaseEnvCfg
+from .matterix_base_env_cfg import LightStateCfg, MatterixBaseEnvCfg
 
 ##
 # Register Gym environments.

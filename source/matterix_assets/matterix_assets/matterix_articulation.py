@@ -3,11 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Copyright (c) 2022-2025, The Isaac Lab Project Developers.
-# All rights reserved.
-#
-# SPDX-License-Identifier: BSD-3-Clause
-
+"""Configuration for articulated objects."""
 
 from isaaclab.assets.articulation import ArticulationCfg
 from isaaclab.managers.action_manager import ActionTermCfg

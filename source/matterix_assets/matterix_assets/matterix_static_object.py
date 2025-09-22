@@ -3,10 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Copyright (c) 2022-2025, The Isaac Lab Project Developers.
-# All rights reserved.
-#
-# SPDX-License-Identifier: BSD-3-Clause
+"""Configuration for rigid and static objects."""
 
 from dataclasses import MISSING
 
@@ -17,7 +14,6 @@ from isaaclab.sensors import FrameTransformerCfg, OffsetCfg
 from isaaclab.utils import configclass
 
 from isaaclab.markers.config import FRAME_MARKER_CFG  # isort: skip
-
 
 marker_cfg = FRAME_MARKER_CFG.copy()
 marker_cfg.markers["frame"].scale = (0.03, 0.03, 0.03)

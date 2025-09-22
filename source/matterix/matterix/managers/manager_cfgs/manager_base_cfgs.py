@@ -51,7 +51,7 @@ class InitialStateRecorder(RecorderTerm):
 
     def record_post_reset(self, env_ids: Sequence[int] | None):
         def extract_env_ids_values(value):
-            nonlocal env_ids
+            nonlocal env_ids  # noqa: F824
             if isinstance(value, dict):
                 return {k: extract_env_ids_values(v) for k, v in value.items()}
             return value[env_ids]

@@ -3,11 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Copyright (c) 2022-2025, The Isaac Lab Project Developers.
-# All rights reserved.
-#
-# SPDX-License-Identifier: BSD-3-Clause
-
+"""Test development environment with multiple Franka robots and beakers."""
 
 from matterix.envs import MatterixBaseEnvCfg, mdp
 from matterix_assets.infrastructure.tables import TABLE_SEATTLE_INST_Cfg, TABLE_THORLABS_75X90_INST_Cfg

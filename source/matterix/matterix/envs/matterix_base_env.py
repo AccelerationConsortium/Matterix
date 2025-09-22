@@ -16,9 +16,9 @@ from typing import Any, ClassVar
 
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.version import get_version
+from matterix.particle_systems import Particles
 from matterix_assets import MatterixArticulationCfg, MatterixRigidObjectCfg, MatterixStaticObjectCfg
 
-import isaaclab.sim as sim_utils
 from isaaclab.assets import AssetBaseCfg
 from isaaclab.envs.common import VecEnvObs, VecEnvStepReturn
 from isaaclab.envs.manager_based_env import ManagerBasedEnv
@@ -85,9 +85,21 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             cfg: The configuration for the environment.
             render_mode: The render mode for the environment. Defaults to None, which
                 is similar to ``"human"``.
+        Raises:
+            RuntimeError: If a simulation context already exists. The environment must always create one
+                since it configures the simulation context and controls the simulation.
         """
         # -- counter for curriculum
         self.common_step_counter = 0
+
+        # check if particle system is enabled, change the device
+        # currently the way the device arguments is handled in script arguments (e.g., zero_agent.py) is:
+        # it can only be set by the user, otherwise it is set to `cuda:0` by default and overwrites the cfg.sim.device variable
+        # this should be fixed later in isaaclab to make changing the device easier in post initialization of cfg
+        if cfg.enable_particles:
+            cfg.sim.device = "cpu"  # change the device to CPU for particle systems
+
+        # check that the config is valid
         self.cfg = cfg
 
         print("-------------------------------")
@@ -111,6 +123,13 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         self.metadata["render_fps"] = 1 / self.step_dt
 
         print("[INFO]: Completed setting up the environment...")
+
+        self.particle_systems: dict[str, Particles] = {}
+
+        for particle_name, particle_cfg in self.cfg.particle_systems.items():
+            self.particle_systems[particle_name] = Particles(particle_name, particle_cfg, self)
+
+        self.spawn_reserve_particle_systems()
 
     """
     Properties.
@@ -263,7 +282,6 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         # -- compute observations
         # note: done after reset to get the correct observations for reset envs
         self.obs_buf = self.observation_manager.compute()
-
         # return observations, rewards, resets and extras
         return self.obs_buf, self.reward_buf, self.reset_terminated, self.reset_time_outs, self.extras
 
@@ -376,11 +394,17 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         Args:
             env_ids: List of environment ids which must be reset
         """
+
         # update the curriculum for environments that need a reset
         self.curriculum_manager.compute(env_ids=env_ids)
-        print(self.scene._articulations)
         # reset the internal buffers of the scene elements
         self.scene.reset(env_ids)
+        # reset the particle systems in the scene
+        for particle_system in self.particle_systems.values():
+            particle_system.reset(env_ids=env_ids)
+        for particle_system in self.reserved_particle_systems.values():
+            particle_system.reset(env_ids=env_ids)
+
         # apply events such as randomizations for environments that need a reset
         if "reset" in self.event_manager.available_modes:
             env_step_count = self._sim_step_counter // self.cfg.decimation
@@ -527,15 +551,23 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
 
         self.cfg.scene.plane = AssetBaseCfg(
             prim_path="/World/GroundPlane",
-            init_state=AssetBaseCfg.InitialStateCfg(pos=[0, 0, -1.05]),
-            spawn=GroundPlaneCfg(),
+            init_state=AssetBaseCfg.InitialStateCfg(pos=(0, 0, -1.05)),
+            spawn=GroundPlaneCfg(color=(0.005, 0.015, 0.08)),
         )  # plane
 
         # lights
-        self.cfg.scene.light = AssetBaseCfg(
-            prim_path="/World/light",
-            spawn=sim_utils.DomeLightCfg(color=(0.75, 0.75, 0.75), intensity=3000.0),
-        )
+
+        # Loop through the existing light configurations from cfg file
+        for light_name, light_cfg in self.cfg.lights.items():
+            setattr(
+                self.cfg.scene,
+                light_name,
+                AssetBaseCfg(
+                    prim_path=f"/World/{light_name}",
+                    spawn=light_cfg.light,
+                    init_state=AssetBaseCfg.InitialStateCfg(pos=light_cfg.pos, rot=light_cfg.rot),
+                ),
+            )
 
     def setup_recorder(self):
         """Setup the recorder manager."""
@@ -550,3 +582,20 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             self.cfg.recorders.dataset_export_dir_path = output_dir
             self.cfg.recorders.dataset_filename = output_file_name
             self.cfg.recorders.dataset_export_mode = DatasetExportMode.EXPORT_SUCCEEDED_ONLY
+
+    def spawn_reserve_particle_systems(self):
+        self.reserved_particle_systems: dict[str, Particles] = {}
+        if self.cfg.reserved_particle_systems is not None:
+            if len(self.cfg.reserved_particle_systems) > 2:
+                raise ValueError(
+                    "Only two types of reserved particle systems are allowed: fluid and powder (max two elements)."
+                )
+            i = 0
+            for reserved_particle_cfg in self.cfg.reserved_particle_systems:
+                for _ in range(reserved_particle_cfg.num_reserved_particle_sys):
+                    i += 1
+                    particle_name = f"reserved_particle_{i}"
+                    self.reserved_particle_systems[particle_name] = Particles(
+                        name=particle_name, cfg=reserved_particle_cfg, env=self
+                    )
+                    print(f"[INFO] Initializing reserved particles {particle_name}.")
