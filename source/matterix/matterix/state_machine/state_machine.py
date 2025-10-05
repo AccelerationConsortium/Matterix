@@ -19,7 +19,6 @@ class StateMachine:
             env: Environment proxy exposing robot/object state for parallel envs.
             device: Torch device used for internal tensors.
         """
-        print(env)
         self.env = env
         self.num_envs = env.num_envs
         self.device = device
