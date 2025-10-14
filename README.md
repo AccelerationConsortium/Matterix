@@ -101,9 +101,9 @@ The key features of Matterix are:
             python scripts/zero_agent.py --task=<TASK_NAME>
 
             # example of an environment with two robot arms and several beakers:
-            python scripts/zero_agent.py --task Isaac-Test-Beakers-Franka-v1 --num_envs 1
+            python scripts/zero_agent.py --task Matterix-Test-Beakers-Franka-v1 --num_envs 1
             # or
-            ./matterix.sh -p scripts/zero_agent.py --task Isaac-Test-Beakers-Franka-v1 --num_envs 1
+            ./matterix.sh -p scripts/zero_agent.py --task Matterix-Test-Beakers-Franka-v1 --num_envs 1
 
             ```
         - Random-action agent
@@ -113,9 +113,9 @@ The key features of Matterix are:
             python scripts/random_agent.py --task=<TASK_NAME>
 
             # example of an environment with two robot arms and several beakers:
-            python scripts/random_agent.py --task Isaac-Test-Beakers-Franka-v1 --num_envs 1
+            python scripts/random_agent.py --task Matterix-Test-Beakers-Franka-v1 --num_envs 1
             # or
-            ./matterix.sh -p scripts/random_agent.py --task Isaac-Test-Beakers-Franka-v1 --num_envs 1
+            ./matterix.sh -p scripts/random_agent.py --task Matterix-Test-Beakers-Franka-v1 --num_envs 1
 
             ```
 

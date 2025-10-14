@@ -212,6 +212,7 @@ class MatterixBaseEnvCfg:
     env_spacing = 2.5
     dt: float = 1 / 60  # Hz
     num_envs = 1
+    export_io_descriptors = False
 
     # physX settings
     bounce_threshold_velocity = 0.01
