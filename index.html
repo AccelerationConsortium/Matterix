@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="MatteriX: Towards a Digital Twin for Robotics-Assisted Chemistry Lab Automation">
+  <meta name="keywords"
+    content="MatteriX, Isaac Sim, Isaac Lab, Simulation, Robotics, Chemistry, Lab Automation, Materials Science, Digital Twin, Liquid Simulation, Particle Simulation, Powder Simulation, State Machine, Framework, Open Source">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Matterix</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+
+  <style>
+    body {
+      font-family: 'Noto Sans', sans-serif;
+    }
+
+    .hero-body {
+      padding: 3rem 1.5rem;
+    }
+
+    .publication-title {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    .publication-authors {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .publication-venue {
+      font-size: 1rem;
+      color: #4a4a4a;
+      margin-bottom: 1rem;
+    }
+
+    .button.is-light {
+      background-color: transparent;
+      border: 1px solid #dbdbdb;
+    }
+
+    .button.is-light:hover {
+      background-color: #f5f5f5;
+    }
+
+    .publication-video {
+      position: relative;
+      width: 100%;
+      height: 0;
+      padding-bottom: 56.25%;
+      overflow: hidden;
+      border-radius: 10px;
+      background: #000;
+    }
+
+    .publication-video iframe {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      left: 0;
+      top: 0;
+    }
+
+    .content-section {
+      padding: 3rem 0;
+    }
+
+    .teaser-image {
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+
+<body>
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="publication-title">MatteriX</h1>
+            <h2 class="subtitle publication-title" style="font-size: 1.5rem; margin-top: -1rem;">
+              Towards a Digital Twin for Robotics-Assisted Chemistry Lab Automation
+            </h2>
+            <div class="publication-authors">
+              <span class="author-block">
+                <a href="https://github.com/ac-rad">MatteriX Team</a>,
+              </span>
+
+            </div>
+
+            <div class="publication-venue">
+              <span class="venue-block">publication at ...</span>
+            </div>
+
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <span class="link-block">
+                  <a href="https://github.com/AccelerationConsortium/Matterix" class="button is-light is-rounded">
+                    <span class="icon">
+                      <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="https://github.com/AccelerationConsortium/Matterix/blob/main/README.md"
+                    class="button is-light is-rounded">
+                    <span class="icon">
+                      <i class="fas fa-book"></i>
+                    </span>
+                    <span>Documentation</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="#" class="button is-light is-rounded">
+                    <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                    </span>
+                    <span>arXiv (Coming Soon)</span>
+                  </a>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hero is-light is-small">
+    <div class="hero-body">
+      <div class="container">
+        <div class="columns is-centered has-text-centered">
+          <div class="column is-four-fifths">
+            <h2 class="title is-3">Overview</h2>
+            <div class="content has-text-justified">
+              <p>
+                Matterix is a multi-scale, GPU-accelerated robotic simulation framework designed to
+                create high-fidelity digital twins. Demonstrated for chemistry lab automation, it
+                reduces reliance on costly real-world experiments. Built on NVIDIA Isaac Sim and Isaac
+                Lab, it integrates realistic physics simulation and photorealistic rendering with a
+                modular GPU-accelerated semantics engine to model robotic manipulation, powder and
+                liquid dynamics, device functionalities, heat transfer, and chemical reaction kinetics
+                across different levels of abstraction. The framework enables rapid prototyping and
+                testing of automated workflows in silico, with demonstrated sim-to-real transfer
+                capabilities and open-source asset libraries.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section content-section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3 has-text-centered">Key Features</h2>
+
+          <div class="content">
+            <div class="columns is-multiline">
+              <div class="column is-half">
+                <div class="box">
+                  <h3 class="title is-5">
+                    <span class="icon has-text-info">
+                      <i class="fas fa-layer-group"></i>
+                    </span>
+                    Multi-Scale Simulation
+                  </h3>
+                  <p>Extends NVIDIA Isaac Sim's physics engine with a semantics engine for multi-scale
+                    workflow simulation. Includes heat transfer and chemical kinetics, with
+                    extensible architecture for other
+                    domains.</p>
+                </div>
+              </div>
+
+              <div class="column is-half">
+                <div class="box">
+                  <h3 class="title is-5">
+                    <span class="icon has-text-success">
+                      <i class="fas fa-microchip"></i>
+                    </span>
+                    GPU-Parallelized Semantics Engine
+                  </h3>
+                  <p>Models logical states and continuous behaviors across abstraction levels, running
+                    on GPU for efficient parallelization with physics integration.</p>
+                </div>
+              </div>
+
+              <div class="column is-half">
+                <div class="box">
+                  <h3 class="title is-5">
+                    <span class="icon has-text-primary">
+                      <i class="fas fa-water"></i>
+                    </span>
+                    Particle-Based Simulation
+                  </h3>
+                  <p>Vectorized simulation of powder and liquid dynamics for realistic modeling of
+                    granular materials.
+                  </p>
+                </div>
+              </div>
+
+              <div class="column is-half">
+                <div class="box">
+                  <h3 class="title is-5">
+                    <span class="icon has-text-warning">
+                      <i class="fas fa-sitemap"></i>
+                    </span>
+                    Hierarchical Workflow Design
+                  </h3>
+                  <p>Build workflows using hierarchical state machines and a skill library combining
+                    learning-based and
+                    classical methods, vectorized for long-horizon training.</p>
+                </div>
+              </div>
+
+              <div class="column is-half">
+                <div class="box">
+                  <h3 class="title is-5">
+                    <span class="icon has-text-link">
+                      <i class="fas fa-cubes"></i>
+                    </span>
+                    Easy Environment Creation
+                  </h3>
+                  <p>Library of photorealistic lab assets with support for generating environments
+                    from real labs via 3D scanning.</p>
+                </div>
+              </div>
+
+              <div class="column is-half">
+                <div class="box">
+                  <h3 class="title is-5">
+                    <span class="icon has-text-danger">
+                      <i class="fas fa-exchange-alt"></i>
+                    </span>
+                    Sim-to-Real Transfer
+                  </h3>
+                  <p>Demonstrated deployment of robots and automated platforms from simulation to real
+                    laboratory settings.</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="section">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered">Particle Simulation</h2>
+
+      <!-- Full-width featured video 1 -->
+      <div class="columns is-centered" style="margin-bottom: 2rem;">
+        <div class="column is-full-width">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                height: 400px; 
+                border-radius: 10px; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center;">
+            <p style="color: white; font-size: 1.5rem;">Video Coming Soon</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid of smaller videos -->
+      <h3 class="title is-4 has-text-centered" style="margin-bottom: 1.5rem;">Examples</h3>
+
+      <!-- Row 1 -->
+      <div class="columns is-multiline">
+        <div class="column is-4">
+          <div style="background: #f5f5f5; padding: 60px 20px; text-align: center; border-radius: 10px;">
+            <p style="color: #999;">Coming Soon</p>
+          </div>
+          <p class="has-text-centered" style="margin-top: 0.5rem;"><strong>Material Mixing</strong></p>
+        </div>
+
+        <div class="column is-4">
+          <div style="background: #f5f5f5; padding: 60px 20px; text-align: center; border-radius: 10px;">
+            <p style="color: #999;">Coming Soon</p>
+          </div>
+          <p class="has-text-centered" style="margin-top: 0.5rem;"><strong>Powder Flow</strong></p>
+        </div>
+
+        <div class="column is-4">
+          <div style="background: #f5f5f5; padding: 60px 20px; text-align: center; border-radius: 10px;">
+            <p style="color: #999;">Coming Soon</p>
+          </div>
+          <p class="has-text-centered" style="margin-top: 0.5rem;"><strong>Granular Behavior</strong></p>
+        </div>
+      </div>
+
+      <!-- Row 2 -->
+      <div class="columns is-multiline">
+        <div class="column is-4">
+          <div style="background: #f5f5f5; padding: 60px 20px; text-align: center; border-radius: 10px;">
+            <p style="color: #999;">Coming Soon</p>
+          </div>
+          <p class="has-text-centered" style="margin-top: 0.5rem;"><strong>Dispersion Dynamics</strong></p>
+        </div>
+
+        <div class="column is-4">
+          <div style="background: #f5f5f5; padding: 60px 20px; text-align: center; border-radius: 10px;">
+            <p style="color: #999;">Coming Soon</p>
+          </div>
+          <p class="has-text-centered" style="margin-top: 0.5rem;"><strong>Collision Physics</strong></p>
+        </div>
+
+        <div class="column is-4">
+          <div style="background: #f5f5f5; padding: 60px 20px; text-align: center; border-radius: 10px;">
+            <p style="color: #999;">Coming Soon</p>
+          </div>
+          <p class="has-text-centered" style="margin-top: 0.5rem;"><strong>Settling Behavior</strong></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background-color: #fafafa;">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered">State Machine Workflows</h2>
+
+      <!-- Full-width featured video 2 -->
+      <div class="columns is-centered" style="margin-bottom: 2rem;">
+        <div class="column is-full-width">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                height: 400px; 
+                border-radius: 10px; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center;">
+            <p style="color: white; font-size: 1.5rem;">Video Coming Soon</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid of smaller videos -->
+      <h3 class="title is-4 has-text-centered" style="margin-bottom: 1.5rem;">Examples</h3>
+
+      <!-- Row -->
+      <div class="columns is-multiline">
+        <div class="column is-4">
+          <div style="background: #f5f5f5; padding: 60px 20px; text-align: center; border-radius: 10px;">
+            <p style="color: #999;">Coming Soon</p>
+          </div>
+          <p class="has-text-centered" style="margin-top: 0.5rem;"><strong>Automated Workflows</strong></p>
+        </div>
+
+        <div class="column is-4">
+          <div style="background: #f5f5f5; padding: 60px 20px; text-align: center; border-radius: 10px;">
+            <p style="color: #999;">Coming Soon</p>
+          </div>
+          <p class="has-text-centered" style="margin-top: 0.5rem;"><strong>Robot Control</strong></p>
+        </div>
+
+        <div class="column is-4">
+          <div style="background: #f5f5f5; padding: 60px 20px; text-align: center; border-radius: 10px;">
+            <p style="color: #999;">Coming Soon</p>
+          </div>
+          <p class="has-text-centered" style="margin-top: 0.5rem;"><strong>Complex Sequences</strong></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section content-section" style="background-color: #fafafa;">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3 has-text-centered">Getting Started</h2>
+
+          <div class="content">
+            <h3 class="title is-4">Installation</h3>
+            <pre><code>git clone https://github.com/AccelerationConsortium/Matterix.git
+cd Matterix
+# Follow installation instructions in README</code></pre>
+
+            <h3 class="title is-4">Quick Example</h3>
+            <pre><code># Run a basic simulation
+python scripts/run_simulation.py
+
+# Access Matterix assets
+from matterix_assets import get_asset_path</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section content-section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3 has-text-centered">Recent Updates</h2>
+
+          <div class="content">
+            <ul>
+              <li><strong>Isaac Sim v5 Compatibility:</strong> Updated for the latest Isaac Sim release
+              </li>
+              <li><strong>Particle System:</strong> New particle simulation capabilities added</li>
+              <li><strong>Asset Management:</strong> Integrated LFS-based asset submodule system</li>
+              <li><strong>State Machine:</strong> Flexible workflow automation framework</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background-color: #f5f5f5;">
+    <div class="container is-max-desktop content">
+      <h2 class="title has-text-centered">Citation</h2>
+      <pre><code>@software{matterix2024,
+  title={Matterix: A Framework for Materials Science Simulation},
+  author={AC-RAD Team and Acceleration Consortium},
+  year={2024},
+  url={https://github.com/AccelerationConsortium/Matterix}
+}</code></pre>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="content has-text-centered">
+        <p>
+          <strong>Matterix</strong> is maintained by the
+          <a href="https://github.com/AccelerationConsortium">Acceleration Consortium</a>.
+        </p>
+        <p>
+          Website template adapted from <a href="https://nerfies.github.io">Nerfies</a>.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+</body>
+
+</html>
