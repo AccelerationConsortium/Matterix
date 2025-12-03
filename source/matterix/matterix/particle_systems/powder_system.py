@@ -48,7 +48,6 @@ TRANSPARENT_MATERIAL_SUFFIX = "/OmniSurfacePresets"
 # Primvars / rendering
 PRIMVAR_DO_NOT_CAST_SHADOWS_NAME = "doNotCastShadows"
 PRIMVAR_DO_NOT_CAST_SHADOWS = True
-DEFAULT_INTERPOLATION = Usd.InterpolationTypeHeld
 
 # Point instancer / particle flags
 ENABLE_SELF_COLLISION = True
@@ -151,8 +150,6 @@ class PowderSystem(ParticleSystem):
         primVarsApi.CreatePrimvar(PRIMVAR_DO_NOT_CAST_SHADOWS_NAME, Sdf.ValueTypeNames.Bool).Set(
             PRIMVAR_DO_NOT_CAST_SHADOWS
         )
-
-        stage.SetInterpolationType(DEFAULT_INTERPOLATION)
 
         # --- Particles grid & point instancer -----------------------------------
         self.particle_point_instancer_path = Sdf.Path(self.prim_path + "/particles")

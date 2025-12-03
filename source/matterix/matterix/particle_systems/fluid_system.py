@@ -57,7 +57,6 @@ TRANSPARENT_MATERIAL_SUFFIX = "/OmniSurfacePresets"
 # Primvars / rendering
 PRIMVAR_DO_NOT_CAST_SHADOWS_NAME = "doNotCastShadows"
 PRIMVAR_DO_NOT_CAST_SHADOWS = True
-DEFAULT_INTERPOLATION = Usd.InterpolationTypeHeld
 
 # Point instancer / particle flags
 ENABLE_SELF_COLLISION = True
@@ -174,8 +173,6 @@ class FluidSystem(ParticleSystem):
             PRIMVAR_DO_NOT_CAST_SHADOWS
         )
 
-        stage.SetInterpolationType(DEFAULT_INTERPOLATION)
-
         # --- Particles grid & point instancer -----------------------------------
         self.particle_point_instancer_path = Sdf.Path(self.prim_path + "/particles")
 
@@ -217,6 +214,7 @@ class FluidSystem(ParticleSystem):
         # Refresh handle and solver iterations
         self.instancer = UsdGeom.PointInstancer.Get(self.stage, self.particle_point_instancer_path)
         particle_system.CreateSolverPositionIterationCountAttr().Set(SOLVER_POSITION_ITERATION_COUNT)
+        self.instancer.GetVisibilityAttr().Set("invisible")
 
         # Optional: pause/resume to ensure transparent material visibility
         if PAUSE_RESUME_WORKAROUND:
