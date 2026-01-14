@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2025, The Matterix Project Developers.
+# Copyright (c) 2022-2026, The Matterix Project Developers.
 # All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -17,7 +17,11 @@ from typing import Any, ClassVar
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.version import get_version
 from matterix.particle_systems import Particles
-from matterix_assets import MatterixArticulationCfg, MatterixRigidObjectCfg, MatterixStaticObjectCfg
+from matterix_assets import (
+    MatterixArticulationCfg,
+    MatterixRigidObjectCfg,
+    MatterixStaticObjectCfg,
+)
 
 from isaaclab.assets import AssetBaseCfg
 from isaaclab.envs.common import VecEnvObs, VecEnvStepReturn
@@ -283,7 +287,13 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         # note: done after reset to get the correct observations for reset envs
         self.obs_buf = self.observation_manager.compute()
         # return observations, rewards, resets and extras
-        return self.obs_buf, self.reward_buf, self.reset_terminated, self.reset_time_outs, self.extras
+        return (
+            self.obs_buf,
+            self.reward_buf,
+            self.reset_terminated,
+            self.reset_time_outs,
+            self.extras,
+        )
 
     def render(self, recompute: bool = False) -> np.ndarray | None:
         """Run rendering without stepping through the physics.
@@ -341,7 +351,10 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             # return the rgb data
             # note: initially the renerer is warming up and returns empty data
             if rgb_data.size == 0:
-                return np.zeros((self.cfg.viewer.resolution[1], self.cfg.viewer.resolution[0], 3), dtype=np.uint8)
+                return np.zeros(
+                    (self.cfg.viewer.resolution[1], self.cfg.viewer.resolution[0], 3),
+                    dtype=np.uint8,
+                )
             else:
                 return rgb_data[:, :, :3]
         else:
@@ -367,7 +380,10 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         """Configure the action and observation spaces for the Gym environment."""
         # observation space (unbounded since we don't impose any limits)
         self.single_observation_space = gym.spaces.Dict()
-        for group_name, group_term_names in self.observation_manager.active_terms.items():
+        for (
+            group_name,
+            group_term_names,
+        ) in self.observation_manager.active_terms.items():
             # extract quantities about the group
             has_concatenated_obs = self.observation_manager.group_obs_concatenate[group_name]
             group_dim = self.observation_manager.group_obs_dim[group_name]
@@ -443,7 +459,10 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         self.episode_length_buf[env_ids] = 0
 
     def reset(
-        self, seed: int | None = None, env_ids: Sequence[int] | None = None, options: dict[str, Any] | None = None
+        self,
+        seed: int | None = None,
+        env_ids: Sequence[int] | None = None,
+        options: dict[str, Any] | None = None,
     ) -> tuple[VecEnvObs, dict]:
         """Resets the specified environments and returns observations.
 

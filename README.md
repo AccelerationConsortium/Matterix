@@ -1,8 +1,8 @@
 # Matterix
 
 
-[![IsaacSim](https://img.shields.io/badge/IsaacSim-4.5.0-silver.svg)](https://docs.isaacsim.omniverse.nvidia.com/latest/index.html)
-[![Python](https://img.shields.io/badge/python-3.10-blue.svg)](https://docs.python.org/3/whatsnew/3.10.html)
+[![IsaacSim](https://img.shields.io/badge/IsaacSim-5.0.0-silver.svg)](https://docs.isaacsim.omniverse.nvidia.com/latest/index.html)
+[![Python](https://img.shields.io/badge/python-3.11-blue.svg)](https://docs.python.org/3/whatsnew/3.11.html)
 [![Linux platform](https://img.shields.io/badge/platform-linux--64-orange.svg)](https://releases.ubuntu.com/20.04/)
 [![Windows platform](https://img.shields.io/badge/platform-windows--64-orange.svg)](https://www.microsoft.com/en-us/)
 [![pre-commit](https://img.shields.io/github/actions/workflow/status/isaac-sim/IsaacLab/pre-commit.yaml?logo=pre-commit&logoColor=white&label=pre-commit&color=brightgreen)](https://github.com/isaac-sim/IsaacLab/actions/workflows/pre-commit.yaml)
@@ -26,6 +26,19 @@ The key features of Matterix are:
 
 - Install Isaac Lab by following the [installation guide](https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/index.html).
   We recommend using the conda installation as it simplifies calling Python scripts from the terminal.
+To install IsaacSim and IsaacLab using conda:
+```
+# create and activate conda env
+conda create -n <isaaclab-conda-env-name> python=3.11
+conda activate <isaaclab-conda-env-name>
+pip install --upgrade pip
+
+# Install a CUDA-enabled PyTorch
+pip install -U torch==2.7.0 torchvision==0.22.0 --index-url https://download.pytorch.org/whl/cu128
+# Install the Isaac Lab packages along with Isaac Sim:
+pip install isaaclab[isaacsim,all]==2.3.0 --extra-index-url https://pypi.nvidia.com
+```
+For advanced installation options, refer to [installation guide](https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/index.html).
 
 - Install git lfs with `git lfs install`
 
@@ -49,7 +62,9 @@ The key features of Matterix are:
     # Activate your Isaac Lab Conda environment
     conda activate <isaaclab-conda-env-name>
 
-    # Install Matterix in editable mode
+    # Install Matterix packages in editable mode
+    # This installs: matterix_sm, matterix_assets, matterix_tasks, and matterix
+    # matterix_sm will auto-detect Isaac Lab and include full functionality
     python -m pip install -e source/*
 
     # ─── Fallback: If Isaac Lab is not installed in the active env ───
@@ -64,12 +79,90 @@ The key features of Matterix are:
     source <path-to-your-venv>/bin/activate  # On Linux/macOS
     # .\<path-to-your-venv>\Scripts\activate  # On Windows
 
-    # Install Matterix in editable mode
+    # Install Matterix packages in editable mode
     python -m pip install -e source/*
     ```
 
+### Package Structure
 
+MATteRIX consists of four installable packages:
 
+1. **matterix_sm** - Standalone state machine for sequential action orchestration
+   - Auto-detects Isaac Lab and installs full functionality when available
+   - Falls back to minimal install (configs only) when Isaac Lab is not present
+   - Can be used independently in other robotic projects
+
+2. **matterix_assets** - Asset library with semantic metadata (robots, labware, infrastructure)
+
+3. **matterix_tasks** - Task/environment definitions for RL training
+
+4. **matterix** - Core simulation framework (depends on matterix_sm)
+
+The command `python -m pip install -e source/*` installs all packages with optimal configuration.
+
+## Workflows
+
+A **workflow** is a sequence of robotic actions orchestrated by the **State Machine (SM)** to accomplish tasks like picking, placing, or manipulating objects. The State Machine is **hierarchical** with arbitrary levels of abstraction: workflows contain **compositional actions** (like PickObject), which chain together **primitive actions** (Move, OpenGripper, CloseGripper). Primitive action policies are implemented in `matterix_sm/primitive_actions/`.
+
+Workflows receive **observations** (including asset frame information streamed via the observation manager) as input and output **action dictionaries** that serve as input to the environment. Theoretically, a workflow is itself a compositional action and can be implemented using various planning methods for long-horizon tasks. The current state machine implementation is particularly useful for workflow testing and data collection.
+
+### Multi-Agent Support
+
+Environments can contain multiple **agents** (robots, devices, etc.), each capable of executing actions. Every action must specify `agent_assets` - the agent name(s) responsible for executing that action:
+
+- Single agent: `agent_assets="robot"`
+- Multiple agents (joint action): `agent_assets=["robot_1", "robot_2"]`
+
+### Asset Frames
+
+Asset manipulation frames (e.g., `pre_grasp`, `grasp`, `post_grasp`) are defined in **body frame coordinates** within asset configuration files in `matterix_assets`. These frames enable frame-based manipulation where actions can target specific object frames (e.g., `MoveToFrameCfg(object="beaker", frame="grasp")`).
+
+### Creating a Workflow
+
+Define workflows in your environment config by creating action sequences:
+
+```python
+from matterix_sm import PickObjectCfg, MoveToFrameCfg
+from matterix_sm.robot_action_spaces import FRANKA_IK_ACTION_SPACE
+
+# Define a workflow as a list of actions
+workflows = {
+    "pickup_beaker": [
+        PickObjectCfg(
+            object="beaker_500ml",
+            agent_assets="robot",  # Which agent executes this action
+            action_space_info=FRANKA_IK_ACTION_SPACE,
+        ),
+    ],
+    "move_to_table": [
+        MoveToFrameCfg(
+            object="table",
+            frame="center",  # Frame defined in asset config (body frame)
+            agent_assets="robot",
+            action_space_info=FRANKA_IK_ACTION_SPACE,
+        ),
+    ],
+}
+```
+
+Add workflows to your environment config class as a `workflows` attribute. See [`source/matterix_sm/README.md`](source/matterix_sm/README.md) for detailed action documentation and available primitive/compositional actions.
+
+### Running a Workflow
+
+```bash
+# List available workflows for a task
+python scripts/list_workflows.py --task Matterix-Test-Beaker-Lift-Franka-v1
+
+# Run a specific workflow
+python scripts/run_workflow.py --task Matterix-Test-Beaker-Lift-Franka-v1 --workflow pickup_beaker --num_envs 4
+
+# Or using matterix.sh wrapper
+./matterix.sh -p scripts/run_workflow.py --task Matterix-Test-Beaker-Lift-Franka-v1 --workflow pickup_beaker
+```
+
+The State Machine automatically handles parallel execution across multiple environments, with each environment progressing through actions independently.
+
+## Verification
 
 - Verify that the extension is correctly installed by:
 

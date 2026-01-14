@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2025, The Matterix Project Developers.
+# Copyright (c) 2022-2026, The Matterix Project Developers.
 # All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -16,9 +16,11 @@ EXTENSION_PATH = os.path.dirname(os.path.realpath(__file__))
 EXTENSION_TOML_DATA = toml.load(os.path.join(EXTENSION_PATH, "config", "extension.toml"))
 
 # Minimum dependencies required prior to installation
+# Note: matterix_sm will auto-detect and include Isaac Lab if available
 INSTALL_REQUIRES = [
     # NOTE: Add dependencies
     "psutil",
+    "matterix_sm",  # Will include Isaac Lab automatically if present
 ]
 PYTORCH_INDEX_URL = ["https://download.pytorch.org/whl/cu118"]
 

@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "matterix_sm"
+version = "0.1.0"
+description = "State machine library for sequential action orchestration in robotic manipulation"
+authors = [{name = "Matterix Project Developers"}]
+maintainers = [{name = "Matterix Project Developers"}]
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = ["robotics", "state-machine", "manipulation", "matterix"]
+classifiers = [
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.10",
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "torch>=2.0.0",
+    "numpy>=1.23.0",
+]
+
+[project.optional-dependencies]
+full = ["isaaclab"]
+minimal = []
+
+[project.urls]
+Repository = "https://github.com/ac-rad/Matterix.git"

@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2025, The Matterix Project Developers.
+# Copyright (c) 2022-2026, The Matterix Project Developers.
 # All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -53,7 +53,9 @@ class FRANKA_ROBOTI2F85_INST_CFG(MatterixArticulationCfg):
             max_depenetration_velocity=5.0,
         ),
         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
-            enabled_self_collisions=True, solver_position_iteration_count=8, solver_velocity_iteration_count=0
+            enabled_self_collisions=True,
+            solver_position_iteration_count=8,
+            solver_velocity_iteration_count=0,
         ),
         # collision_props=sim_utils.CollisionPropertiesCfg(contact_offset=0.005, rest_offset=0.0),
     )
@@ -105,7 +107,16 @@ class FRANKA_ROBOTI2F85_INST_CFG(MatterixArticulationCfg):
             func=franka_stack_events.set_default_joint_pose,
             mode="startup",
             params={
-                "default_pose": [0.0444, -0.1894, -0.1107, -2.5148, 0.0044, 2.3775, 0.6952, 0.0],
+                "default_pose": [
+                    0.0444,
+                    -0.1894,
+                    -0.1107,
+                    -2.5148,
+                    0.0044,
+                    2.3775,
+                    0.6952,
+                    0.0,
+                ],
             },
         ),
         "randomize_franka_joint_state": EventTerm(
@@ -156,7 +167,9 @@ class FRANKA_PANDA_CFG(MatterixArticulationCfg):
             max_depenetration_velocity=5.0,
         ),
         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
-            enabled_self_collisions=True, solver_position_iteration_count=8, solver_velocity_iteration_count=0
+            enabled_self_collisions=True,
+            solver_position_iteration_count=8,
+            solver_velocity_iteration_count=0,
         ),
         # collision_props=sim_utils.CollisionPropertiesCfg(contact_offset=0.005, rest_offset=0.0),
     )
@@ -210,15 +223,34 @@ class FRANKA_PANDA_CFG(MatterixArticulationCfg):
             func=franka_stack_events.set_default_joint_pose,
             mode="startup",
             params={
-                "default_pose": [0.0444, -0.1894, -0.1107, -2.5148, 0.0044, 2.3775, 0.6952, 0.0400, 0.0400],
+                "default_pose": [
+                    0.0444,
+                    -0.1894,
+                    -0.1107,
+                    -2.5148,
+                    0.0044,
+                    2.3775,
+                    0.6952,
+                    0.0400,
+                    0.0400,
+                ],
             },
         ),
-        "randomize_franka_joint_state": EventTerm(
-            func=franka_stack_events.randomize_joint_by_gaussian_offset,
+        "reset_franka_arm_pose": EventTerm(
+            func=franka_stack_events.set_default_joint_pose,
             mode="reset",
             params={
-                "mean": 0.0,
-                "std": 0.02,
+                "default_pose": [
+                    0.0444,
+                    -0.1894,
+                    -0.1107,
+                    -2.5148,
+                    0.0044,
+                    2.3775,
+                    0.6952,
+                    0.0400,
+                    0.0400,
+                ],
             },
         ),
     }
@@ -235,9 +267,21 @@ class FRANKA_PANDA_CFG(MatterixArticulationCfg):
                     offset=OffsetCfg(
                         pos=(0.0, 0.0, 0.1034),
                     ),
+                )
+            ],
+        ),
+        "grasping_frame": FrameTransformerCfg(
+            prim_path="/panda_link0",
+            debug_vis=False,
+            visualizer_cfg=marker_cfg,
+            target_frames=[
+                FrameTransformerCfg.FrameCfg(
+                    prim_path="/panda_hand",
+                    name="grasping_frame",
+                    offset=OffsetCfg(pos=(0.0, 0.0, 0.1034), rot=(0.0, 1.0, 0.0, 0.0)),
                 ),
             ],
-        )
+        ),
     }
     semantic_tags = [("class", "robot")]
 

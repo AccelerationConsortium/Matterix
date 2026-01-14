@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2025, The Matterix Project Developers.
+# Copyright (c) 2022-2026, The Matterix Project Developers.
 # All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -12,9 +12,18 @@ configuring the environment instances, viewer settings, and simulation parameter
 from dataclasses import MISSING
 
 from matterix.envs import mdp
-from matterix.managers import ActionManagerCfg, DefaultEventManagerCfg, MatterixBaseRecorderCfg, ObservationManagerCfg
+from matterix.managers import (
+    ActionManagerCfg,
+    DefaultEventManagerCfg,
+    MatterixBaseRecorderCfg,
+    ObservationManagerCfg,
+)
 from matterix.particle_systems import ParticleSystemCfg, ReservedParticleCfg
-from matterix_assets import MatterixArticulationCfg, MatterixRigidObjectCfg, MatterixStaticObjectCfg
+from matterix_assets import (
+    MatterixArticulationCfg,
+    MatterixRigidObjectCfg,
+    MatterixStaticObjectCfg,
+)
 
 from isaaclab.envs.common import ViewerCfg
 from isaaclab.envs.ui import BaseEnvWindow
@@ -206,6 +215,9 @@ class MatterixBaseEnvCfg:
     semantics = None
 
     sensors: dict[str, SensorBaseCfg] = {}
+
+    workflows: dict[str, object] = {}
+    """Workflows available in the environment."""
 
     # general settings
     replicate_physics = False
