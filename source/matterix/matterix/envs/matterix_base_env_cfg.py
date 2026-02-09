@@ -30,7 +30,7 @@ from isaaclab.envs.ui import BaseEnvWindow
 from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sensors import SensorBaseCfg
-from isaaclab.sim import SimulationCfg
+from isaaclab.sim import RenderCfg, SimulationCfg
 from isaaclab.sim.spawners.lights import DomeLightCfg, LightCfg
 from isaaclab.utils import configclass
 
@@ -60,7 +60,11 @@ class MatterixBaseEnvCfg:
     viewer: ViewerCfg = ViewerCfg()
     """Viewer configuration. Default is ViewerCfg()."""
 
-    sim: SimulationCfg = SimulationCfg()
+    sim: SimulationCfg = SimulationCfg(
+        render=RenderCfg(
+            carb_settings={"rtx_translucency_enabled": True, "rtx_raytracing_fractionalCutoutOpacity": True}
+        )
+    )
     """Physics simulation configuration. Default is SimulationCfg()."""
 
     # ui settings

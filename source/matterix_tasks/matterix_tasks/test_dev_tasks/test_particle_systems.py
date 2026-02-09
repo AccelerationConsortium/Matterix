@@ -8,7 +8,7 @@
 from matterix.envs import LightStateCfg, MatterixBaseEnvCfg
 from matterix.particle_systems import FluidCfg, PowderCfg, ReservedFluidCfg, ReservedPowderCfg
 from matterix_assets.infrastructure.tables import TABLE_SEATTLE_INST_Cfg
-from matterix_assets.labware import BEAKER_500ML_CFG
+from matterix_assets.labware import BEAKER_500ML_INST_CFG
 from matterix_assets.robots import FRANKA_PANDA_HIGH_PD_CFG
 
 from isaaclab.sim.spawners.lights import DomeLightCfg, SphereLightCfg
@@ -36,12 +36,12 @@ class FrankaBeakersParticleSystemsEnvTestCfg(MatterixBaseEnvCfg):
     objects = {
         # Set each stacking cube deterministically
         "table": TABLE_SEATTLE_INST_Cfg(pos=(0.5, 0, 0)),
-        "beaker": BEAKER_500ML_CFG(pos=(0.6, 0.1, 0.03)),
-        "beaker_2": BEAKER_500ML_CFG(pos=(0.6, -0.1, 0.03)),
+        "beaker": BEAKER_500ML_INST_CFG(pos=(0.6, 0.1, 0.03)),
+        "beaker_2": BEAKER_500ML_INST_CFG(pos=(0.6, -0.1, 0.03)),
     }
 
     articulated_assets = {
-        "robot": FRANKA_PANDA_HIGH_PD_CFG(),
+        "robot": FRANKA_PANDA_HIGH_PD_CFG(pos=(0.0, 0, 0)),
     }
 
     record_path = "datasets/dataset.hdf5"
