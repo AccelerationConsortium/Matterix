@@ -14,6 +14,21 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
 
+  <!-- Favicon -->
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚗</text></svg>">
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:title" content="MatteriX: Towards a Digital Twin for Robotics-Assisted Chemistry Lab Automation">
+  <meta property="og:description"
+    content="A multi-scale, GPU-accelerated robotic simulation framework for high-fidelity digital twins of chemistry labs.">
+  <meta property="og:url" content="https://ac-rad.github.io/matterix">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MatteriX: Digital Twin for Chemistry Lab Automation">
+  <meta name="twitter:description"
+    content="A multi-scale, GPU-accelerated robotic simulation framework for high-fidelity digital twins of chemistry labs.">
+
   <style>
     body {
       font-family: 'Noto Sans', sans-serif;
@@ -76,10 +91,44 @@
       border-radius: 10px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body.has-navbar-fixed-top {
+      padding-top: 52px;
+    }
+
+    .navbar {
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    }
   </style>
 </head>
 
-<body>
+<body class="has-navbar-fixed-top">
+
+  <nav class="navbar is-fixed-top is-white" role="navigation" aria-label="main navigation">
+    <div class="container is-max-desktop">
+      <div class="navbar-brand">
+        <a class="navbar-item has-text-weight-bold" href="#">MatteriX</a>
+        <a role="button" class="navbar-burger" data-target="navMenu" aria-label="menu" aria-expanded="false">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+      <div class="navbar-menu" id="navMenu">
+        <div class="navbar-end">
+          <a class="navbar-item" href="#overview">Overview</a>
+          <a class="navbar-item" href="#features">Key Features</a>
+          <a class="navbar-item" href="#videos">Videos</a>
+          <a class="navbar-item" href="#getting-started">Getting Started</a>
+          <a class="navbar-item" href="#citation">Citation</a>
+        </div>
+      </div>
+    </div>
+  </nav>
 
   <section class="hero">
     <div class="hero-body">
@@ -91,14 +140,48 @@
               Towards a Digital Twin for Robotics-Assisted Chemistry Lab Automation
             </h2>
             <div class="publication-authors">
-              <span class="author-block">
-                <a href="https://github.com/ac-rad">MatteriX Team</a>,
-              </span>
-
+              Kourosh Darvish<sup>1,2,3,*</sup>,
+              Arjun Sohal<sup>1</sup>,
+              Abhijoy Mandal<sup>1</sup>,
+              Hatem Fakhruldeen<sup>4</sup>,
+              Nikola Radulov<sup>4</sup>,
+              Zhengxue Zhou<sup>4</sup>,
+              Satheeshkumar Veeramani<sup>4</sup>,
+              Joshua Choi<sup>1</sup>,
+              Sijie Han<sup>1</sup>,
+              Brayden Zhang<sup>1</sup>,
+              Jeeyeoun Chae<sup>1</sup>,
+              Alex Wright<sup>4</sup>,
+              Yijie Wang<sup>1,2</sup>,
+              Hossein Darvish<sup>5</sup>,
+              Yuchi Zhao<sup>1,3</sup>,
+              Gary Tom<sup>1,3</sup>,
+              Han Hao<sup>1,2</sup>,
+              Miroslav Bogdanovic<sup>1,3</sup>,
+              Gabriella Pizzuto<sup>4</sup>,
+              Andrew I. Cooper<sup>4</sup>,
+              Al&aacute;n Aspuru Guzik<sup>1,2,3,6,7</sup>,
+              Florian Shkurti<sup>1,3</sup>,
+              Animesh Garg<sup>8</sup>
+            </div>
+            <div class="publication-venue" style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">
+              <sup>1</sup>University of Toronto &nbsp;
+              <sup>2</sup>Acceleration Consortium &nbsp;
+              <sup>3</sup>Vector Institute &nbsp;
+              <sup>4</sup>University of Liverpool &nbsp;
+              <sup>5</sup>University of Salento &nbsp;
+              <sup>6</sup>NVIDIA &nbsp;
+              <sup>7</sup>Canadian Institute for Advanced Research &nbsp;
+              <sup>8</sup>Georgia Institute of Technology<br>
+              <sup>*</sup><a href="mailto:kourosh.darvish@utoronto.ca">kourosh.darvish@utoronto.ca</a>
             </div>
 
-            <div class="publication-venue">
-              <span class="venue-block">publication at ...</span>
+            <!-- affiliations moved below authors -->
+            <div style="margin: 0.75rem 0 0.5rem;">
+              <a href="https://www.nature.com/articles/s43588-025-00924-4"
+                style="font-style: italic; color: #555; font-size: 1rem; text-decoration: none;">
+                Nature Computational Science, 2025
+              </a>
             </div>
 
             <div class="column has-text-centered">
@@ -112,20 +195,28 @@
                   </a>
                 </span>
                 <span class="link-block">
-                  <a href="https://github.com/AccelerationConsortium/Matterix/blob/main/README.md"
-                    class="button is-light is-rounded">
+                  <a href="https://www.nature.com/articles/s43588-025-00924-4" class="button is-light is-rounded">
                     <span class="icon">
                       <i class="fas fa-book"></i>
                     </span>
-                    <span>Documentation</span>
+                    <span>Publication</span>
                   </a>
                 </span>
                 <span class="link-block">
-                  <a href="#" class="button is-light is-rounded">
+                  <a href="https://arxiv.org/abs/2601.13232" class="button is-light is-rounded">
                     <span class="icon">
                       <i class="ai ai-arxiv"></i>
                     </span>
-                    <span>arXiv (Coming Soon)</span>
+                    <span>arXiv</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="https://www.youtube.com/playlist?list=PLSVYUJKrFQa9XEnIQOe0aGFQe1mwBwk9B"
+                    class="button is-light is-rounded">
+                    <span class="icon">
+                      <i class="fab fa-youtube"></i>
+                    </span>
+                    <span>Videos</span>
                   </a>
                 </span>
               </div>
@@ -136,7 +227,7 @@
     </div>
   </section>
 
-  <section class="hero is-light is-small">
+  <section id="overview" class="hero is-light is-small">
     <div class="hero-body">
       <div class="container">
         <div class="columns is-centered has-text-centered">
@@ -144,15 +235,21 @@
             <h2 class="title is-3">Overview</h2>
             <div class="content has-text-justified">
               <p>
-                Matterix is a multi-scale, GPU-accelerated robotic simulation framework designed to
-                create high-fidelity digital twins. Demonstrated for chemistry lab automation, it
-                reduces reliance on costly real-world experiments. Built on NVIDIA Isaac Sim and Isaac
-                Lab, it integrates realistic physics simulation and photorealistic rendering with a
-                modular GPU-accelerated semantics engine to model robotic manipulation, powder and
-                liquid dynamics, device functionalities, heat transfer, and chemical reaction kinetics
-                across different levels of abstraction. The framework enables rapid prototyping and
-                testing of automated workflows in silico, with demonstrated sim-to-real transfer
-                capabilities and open-source asset libraries.
+                Accelerated materials discovery is critical for addressing global challenges. However, developing new
+                laboratory workflows relies heavily on real-world experimental trials, and this can hinder scalability
+                because of the need for numerous physical make-and-test iterations.
+                Here, we present MatteriX, a multi-scale, GPU-accelerated robotic simulation framework designed to
+                create high-fidelity digital twins of chemistry labs, thus accelerating workflow development.
+                This multi-scale digital twin simulates robotic physical manipulation, powder and liquid dynamics,
+                device functionalities, heat transfer, and basic chemical reaction kinetics.
+                This is enabled by integrating realistic physics simulation and photorealistic rendering with a modular
+                GPU-accelerated semantics engine, which models logical states and continuous behaviors to simulate
+                chemistry workflows across different levels of abstraction.
+                MatteriX streamlines the creation of digital twin environments through open-source asset libraries and
+                interfaces, while enabling flexible workflow design via hierarchical plan definition and a modular skill
+                library that incorporates learning-based methods.
+                Our approach demonstrates sim-to-real transfer in robotic chemistry setups, reducing reliance on costly
+                real-world experiments and enabling the testing of hypothetical automated workflows in silico.
               </p>
             </div>
           </div>
@@ -161,7 +258,17 @@
     </div>
   </section>
 
-  <section class="section content-section">
+  <!-- Teaser figure: update src to your figure path once available, e.g. Images/Fig1_overview.png -->
+  <section class="section" style="padding-bottom: 0; padding-top: 2rem;">
+    <div class="container is-max-desktop">
+      <figure class="image" style="max-width: 900px; margin: 0 auto;">
+        <img src="Images/Fig1_overview.png" alt="MatteriX architecture and components overview" class="teaser-image"
+          onerror="this.parentElement.parentElement.parentElement.style.display='none'">
+      </figure>
+    </div>
+  </section>
+
+  <section id="features" class="section content-section">
     <div class="container is-max-desktop">
       <div class="columns is-centered">
         <div class="column is-full-width">
@@ -257,125 +364,159 @@
       </div>
     </div>
   </section>
-  <section class="section">
+  <!-- ===== Sim-to-Real Demonstrations ===== -->
+  <section id="videos" class="section">
     <div class="container is-max-desktop">
-      <h2 class="title is-3 has-text-centered">Particle Simulation</h2>
+      <h2 class="title is-3 has-text-centered">Sim-to-Real Demonstrations</h2>
+      <p class="has-text-centered" style="margin-bottom: 2rem; color: #555;">MatteriX enables direct transfer from
+        simulation to real laboratory settings.</p>
 
-      <!-- Full-width featured video 1 -->
-      <div class="columns is-centered" style="margin-bottom: 2rem;">
+      <!-- Featured: redox chemistry experiment -->
+      <div class="columns is-centered" style="margin-bottom: 1rem;">
         <div class="column is-full-width">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                height: 400px; 
-                border-radius: 10px; 
-                display: flex; 
-                align-items: center; 
-                justify-content: center;">
-            <p style="color: white; font-size: 1.5rem;">Video Coming Soon</p>
+          <div class="publication-video">
+            <iframe src="https://www.youtube.com/embed/11p_eiRAjns" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
           </div>
+          <p class="has-text-centered" style="margin-top: 0.75rem;"><strong>Two-Step Reduction-Oxidation Chemistry
+              Experiment (Real and Digital Twin)</strong></p>
         </div>
       </div>
 
-      <!-- Grid of smaller videos -->
-      <h3 class="title is-4 has-text-centered" style="margin-bottom: 1.5rem;">Examples</h3>
-
-      <!-- Row 1 -->
-      <div class="columns is-multiline">
-        <div class="column is-4">
-          <div style="background: #f5f5f5; padding: 60px 20px; text-align: center; border-radius: 10px;">
-            <p style="color: #999;">Coming Soon</p>
+      <!-- Side by side: OT2+Franka setup + liquid pouring -->
+      <div class="columns">
+        <div class="column is-half">
+          <div class="publication-video">
+            <iframe src="https://www.youtube.com/embed/DtlD9_smsqk" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
           </div>
-          <p class="has-text-centered" style="margin-top: 0.5rem;"><strong>Material Mixing</strong></p>
+          <p class="has-text-centered" style="margin-top: 0.75rem;"><strong>Liquid Handling Station with OT-2 and Franka
+              Research 3</strong></p>
         </div>
-
-        <div class="column is-4">
-          <div style="background: #f5f5f5; padding: 60px 20px; text-align: center; border-radius: 10px;">
-            <p style="color: #999;">Coming Soon</p>
+        <div class="column is-half">
+          <div class="publication-video">
+            <iframe src="https://www.youtube.com/embed/vb9vNfW8HJ4" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
           </div>
-          <p class="has-text-centered" style="margin-top: 0.5rem;"><strong>Powder Flow</strong></p>
-        </div>
-
-        <div class="column is-4">
-          <div style="background: #f5f5f5; padding: 60px 20px; text-align: center; border-radius: 10px;">
-            <p style="color: #999;">Coming Soon</p>
-          </div>
-          <p class="has-text-centered" style="margin-top: 0.5rem;"><strong>Granular Behavior</strong></p>
-        </div>
-      </div>
-
-      <!-- Row 2 -->
-      <div class="columns is-multiline">
-        <div class="column is-4">
-          <div style="background: #f5f5f5; padding: 60px 20px; text-align: center; border-radius: 10px;">
-            <p style="color: #999;">Coming Soon</p>
-          </div>
-          <p class="has-text-centered" style="margin-top: 0.5rem;"><strong>Dispersion Dynamics</strong></p>
-        </div>
-
-        <div class="column is-4">
-          <div style="background: #f5f5f5; padding: 60px 20px; text-align: center; border-radius: 10px;">
-            <p style="color: #999;">Coming Soon</p>
-          </div>
-          <p class="has-text-centered" style="margin-top: 0.5rem;"><strong>Collision Physics</strong></p>
-        </div>
-
-        <div class="column is-4">
-          <div style="background: #f5f5f5; padding: 60px 20px; text-align: center; border-radius: 10px;">
-            <p style="color: #999;">Coming Soon</p>
-          </div>
-          <p class="has-text-centered" style="margin-top: 0.5rem;"><strong>Settling Behavior</strong></p>
+          <p class="has-text-centered" style="margin-top: 0.75rem;"><strong>Liquid Pouring — Simulation and Real
+              Experiment</strong></p>
         </div>
       </div>
     </div>
   </section>
 
+  <!-- ===== Liquid and Powder Handling ===== -->
   <section class="section" style="background-color: #fafafa;">
     <div class="container is-max-desktop">
-      <h2 class="title is-3 has-text-centered">State Machine Workflows</h2>
+      <h2 class="title is-3 has-text-centered">Liquid and Powder Handling</h2>
+      <p class="has-text-centered" style="margin-bottom: 2rem; color: #555;">Simulating liquid and powder dynamics,
+        pipetting workflows, and teleoperated handling in constrained environments.</p>
 
-      <!-- Full-width featured video 2 -->
-      <div class="columns is-centered" style="margin-bottom: 2rem;">
-        <div class="column is-full-width">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                height: 400px; 
-                border-radius: 10px; 
-                display: flex; 
-                align-items: center; 
-                justify-content: center;">
-            <p style="color: white; font-size: 1.5rem;">Video Coming Soon</p>
+      <!-- Featured: bimanual teleoperation -->
+      <div class="columns is-centered" style="margin-bottom: 1rem;">
+        <div class="column is-three-quarters">
+          <div class="publication-video">
+            <iframe src="https://www.youtube.com/embed/9jKSxug32Ig" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
           </div>
+          <p class="has-text-centered" style="margin-top: 0.75rem;"><strong>Bimanual Teleoperation for Liquid and Powder
+              Handling in a Glovebox</strong></p>
         </div>
       </div>
 
-      <!-- Grid of smaller videos -->
-      <h3 class="title is-4 has-text-centered" style="margin-bottom: 1.5rem;">Examples</h3>
-
-      <!-- Row -->
-      <div class="columns is-multiline">
-        <div class="column is-4">
-          <div style="background: #f5f5f5; padding: 60px 20px; text-align: center; border-radius: 10px;">
-            <p style="color: #999;">Coming Soon</p>
+      <!-- Featured: liquid handling station -->
+      <div class="columns is-centered" style="margin-bottom: 1rem;">
+        <div class="column is-full-width">
+          <div class="publication-video">
+            <iframe src="https://www.youtube.com/embed/DWISnyqtzUk" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
           </div>
-          <p class="has-text-centered" style="margin-top: 0.5rem;"><strong>Automated Workflows</strong></p>
+          <p class="has-text-centered" style="margin-top: 0.75rem;"><strong>Liquid Handling Station</strong></p>
         </div>
+      </div>
 
-        <div class="column is-4">
-          <div style="background: #f5f5f5; padding: 60px 20px; text-align: center; border-radius: 10px;">
-            <p style="color: #999;">Coming Soon</p>
+      <!-- Side by side: OT-2 functionalities + liquid pouring -->
+      <div class="columns">
+        <div class="column is-half">
+          <div class="publication-video">
+            <iframe src="https://www.youtube.com/embed/RXr86nRF4hI" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
           </div>
-          <p class="has-text-centered" style="margin-top: 0.5rem;"><strong>Robot Control</strong></p>
+          <p class="has-text-centered" style="margin-top: 0.75rem;"><strong>OT-2 Liquid Handling
+              Functionalities</strong></p>
         </div>
-
-        <div class="column is-4">
-          <div style="background: #f5f5f5; padding: 60px 20px; text-align: center; border-radius: 10px;">
-            <p style="color: #999;">Coming Soon</p>
+        <div class="column is-half">
+          <div class="publication-video">
+            <iframe src="https://www.youtube.com/embed/iDj7HfH7dyw" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
           </div>
-          <p class="has-text-centered" style="margin-top: 0.5rem;"><strong>Complex Sequences</strong></p>
+          <p class="has-text-centered" style="margin-top: 0.75rem;"><strong>Liquid Pouring by OT-2 Robot</strong></p>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section content-section" style="background-color: #fafafa;">
+  <!-- ===== Robotic Manipulation & Navigation ===== -->
+  <section class="section">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered">Robotic Manipulation &amp; Navigation</h2>
+      <p class="has-text-centered" style="margin-bottom: 2rem; color: #555;">Robotic arm and mobile robot capabilities
+        for lab automation tasks.</p>
+
+      <!-- Featured: mobile robot -->
+      <div class="columns is-centered" style="margin-bottom: 1rem;">
+        <div class="column is-full-width">
+          <div class="publication-video">
+            <iframe src="https://www.youtube.com/embed/NHiyla50Who" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
+          </div>
+          <p class="has-text-centered" style="margin-top: 0.75rem;"><strong>Mobile Robot Transferring Beaker Between Two
+              Stations</strong></p>
+        </div>
+      </div>
+
+      <!-- Grid: drying rack, vial insertion, cuRobo -->
+      <div class="columns is-multiline">
+        <div class="column is-one-third">
+          <div class="publication-video">
+            <iframe src="https://www.youtube.com/embed/Dt9z63-I1aI" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
+          </div>
+          <p class="has-text-centered" style="margin-top: 0.75rem;"><strong>Drying Rack with Robot and Beaker</strong>
+          </p>
+        </div>
+        <div class="column is-one-third">
+          <div class="publication-video">
+            <iframe src="https://www.youtube.com/embed/Y5Sf8-DDKDQ" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
+          </div>
+          <p class="has-text-centered" style="margin-top: 0.75rem;"><strong>Vial Insertion to a Rack with a
+              Robot</strong></p>
+        </div>
+        <div class="column is-one-third">
+          <div class="publication-video">
+            <iframe src="https://www.youtube.com/embed/EWxdYJpaqvQ" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
+          </div>
+          <p class="has-text-centered" style="margin-top: 0.75rem;"><strong>cuRobo Motion Planner — Beaker in Fume
+              Hood</strong></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="getting-started" class="section content-section" style="background-color: #fafafa;">
     <div class="container is-max-desktop">
       <div class="columns is-centered">
         <div class="column is-full-width">
@@ -398,34 +539,21 @@ python scripts/random_agent.py --task Matterix-Test-Beakers-Franka-v1 --num_envs
     </div>
   </section>
 
-  <section class="section content-section">
-    <div class="container is-max-desktop">
-      <div class="columns is-centered">
-        <div class="column is-full-width">
-          <h2 class="title is-3 has-text-centered">Recent Updates</h2>
-
-          <div class="content">
-            <ul>
-              <li><strong>IsaacSim5.0 Compatibility:</strong> Updated for the latest Isaac Sim release
-              </li>
-              <li><strong>Particle System:</strong> New particle simulation capabilities added</li>
-              <li><strong>Asset Management:</strong> Integrated LFS-based asset submodule system</li>
-              <li><strong>State Machine:</strong> Flexible workflow automation framework</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" style="background-color: #f5f5f5;">
+  <section id="citation" class="section" style="background-color: #f5f5f5;">
     <div class="container is-max-desktop content">
       <h2 class="title has-text-centered">Citation</h2>
-      <pre><code>@software{matterix2024,
-  title={MatteriX: Towards a Digital Twin for Robotics-Assisted Chemistry Lab Automation},
-  author={MatteriX Team},
+      <pre><code>@article{darvish2025matterix,
+  title={MatteriX: towards a digital twin for robotics-assisted chemistry lab automation},
+  author={Darvish, Kourosh and Sohal, Arjun and Mandal, Abhijoy and Fakhruldeen, Hatem and
+          Radulov, Nikola and Zhou, Zhengxue and Veeramani, Satheeshkumar and Choi, Joshua and
+          Han, Sijie and Zhang, Brayden and Chae, Jeeyeoun and Wright, Alex and Wang, Yijie and
+          Darvish, Hossein and Zhao, Yuchi and Tom, Gary and Hao, Han and Bogdanovic, Miroslav and
+          Pizzuto, Gabriella and Cooper, Andrew I. and Aspuru-Guzik, Al{\'a}n and
+          Shkurti, Florian and Garg, Animesh},
+  journal={Nature Computational Science},
   year={2025},
-  url={https://github.com/AccelerationConsortium/Matterix}
+  doi={10.1038/s43588-025-00924-4},
+  url={https://www.nature.com/articles/s43588-025-00924-4}
 }</code></pre>
     </div>
   </section>
@@ -443,6 +571,13 @@ python scripts/random_agent.py --task Matterix-Test-Beakers-Franka-v1 --num_envs
       </div>
     </div>
   </footer>
+
+  <script>
+    document.querySelector('.navbar-burger').addEventListener('click', function () {
+      this.classList.toggle('is-active');
+      document.getElementById('navMenu').classList.toggle('is-active');
+    });
+  </script>
 
 </body>
 
