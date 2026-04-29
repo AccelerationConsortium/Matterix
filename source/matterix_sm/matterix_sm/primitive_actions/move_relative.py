@@ -163,6 +163,8 @@ class MoveRelative(MoveToPose):
         """Reset target initialization flag when environments are reset."""
         # Target needs to be recomputed relative to new EE pose after reset
         self._target_initialized = False
+        # Reset parent state (_targets_initialized, time_in_threshold, target tensors)
+        super()._reset_impl(env_ids)
 
     @classmethod
     def from_cfg(cls, cfg: MoveRelativeCfg):

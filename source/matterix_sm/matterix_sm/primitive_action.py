@@ -17,6 +17,7 @@ from .action_constants import TIMEOUT_DEFAULT
 from .math_utils import quat_mul, quat_rotate
 from .robot_action_spaces import ActionSpaceInfo
 from .scene_data import SceneData
+from .semantic_info import SemanticInfo
 
 # Lazy import for Isaac Lab dependencies
 # Only loaded when primitive actions are actually used
@@ -40,6 +41,7 @@ class PrimitiveActionCfg(ActionBaseCfg):
     agent_assets: str | list[str] = MISSING
     timeout: float = TIMEOUT_DEFAULT
     action_space_info: ActionSpaceInfo | None = None
+    semantics: list[SemanticInfo] | None = None  # list[SemanticInfo] - avoid forward ref
 
     def __post_init__(self):
         """Normalize agent_assets to list format."""
@@ -79,6 +81,7 @@ class PrimitiveAction(ActionBase):
         agent_assets: str | list[str],
         timeout: float,
         action_space_info: ActionSpaceInfo | None = None,
+        semantics: list[SemanticInfo] | None = None,
     ):
         """
         Args:
@@ -86,6 +89,7 @@ class PrimitiveAction(ActionBase):
             timeout: Max time (in seconds) before the action times out.
             action_space_info: Optional action space metadata for mask creation.
                 If provided, enables partial action updates via masks.
+            semantics: Optional list of semantic state changes to emit when action succeeds.
 
         Note:
             num_envs, device, and dt are set separately via set_execution_params() after construction.
@@ -97,6 +101,7 @@ class PrimitiveAction(ActionBase):
         self.agent_assets = [agent_assets] if isinstance(agent_assets, str) else agent_assets
         self.timeout = timeout
         self.action_space_info = action_space_info
+        self.semantics = semantics
 
         # These will be set via set_execution_params()
         self.num_envs = None
@@ -262,7 +267,7 @@ class PrimitiveAction(ActionBase):
 
     def compute_action(
         self, scene_data: SceneData, env_ids: torch.Tensor
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, list | None]:
         """Advance the action one step for the given environments.
 
         Args:
@@ -270,11 +275,12 @@ class PrimitiveAction(ActionBase):
             env_ids: Indices of active environments.
 
         Returns:
-            (action_tensor, action_dim_mask, env_success_mask, env_failure_mask):
+            (action_tensor, action_dim_mask, env_success_mask, env_failure_mask, semantic_actions):
                 - action_tensor: Shape (num_envs, action_dim) - action values for all envs
                 - action_dim_mask: Shape (action_dim,) - which dimensions this action controls
                 - env_success_mask: Shape (num_envs,) - which environments completed successfully
                 - env_failure_mask: Shape (num_envs,) - which environments failed (timeout or custom)
+                - semantic_actions: Optional list of SemanticInfo or None - semantic state changes to apply if action succeeded
         """
         # Increment elapsed time by dt (one simulation step)
         self.time_elapsed[env_ids] += self.dt
@@ -284,6 +290,11 @@ class PrimitiveAction(ActionBase):
 
         # Check timeout (automatic failure mode)
         env_timeout_mask = self.time_elapsed >= self.timeout
+        if env_timeout_mask.any():
+            print(
+                f"[TIMEOUT] {self.__class__.__name__} timed out: elapsed={self.time_elapsed[env_ids].tolist()}"
+                f" timeout={self.timeout}"
+            )
 
         # Combine timeout with custom failures
         env_failure_mask = env_timeout_mask | self._env_failure_mask
@@ -291,8 +302,19 @@ class PrimitiveAction(ActionBase):
         # Compute action command (still needed even if completed, for state machine)
         action_tensor, action_dim_mask = self._compute_action_impl(scene_data, env_ids)
 
+        # Emit semantics if action succeeded and semantics are defined
+        semantic_actions = None
+        if self._env_success_mask.any() and self.semantics is not None:
+            semantic_actions = self.semantics
+
         # Return pre-computed success mask from _check_completion_impl
-        return action_tensor, action_dim_mask, self._env_success_mask, env_failure_mask
+        return (
+            action_tensor,
+            action_dim_mask,
+            self._env_success_mask,
+            env_failure_mask,
+            semantic_actions,
+        )
 
     def reset(self, env_ids: torch.Tensor | None = None) -> None:
         """Reset internal time counters and action-specific state.
@@ -383,8 +405,14 @@ class PrimitiveAction(ActionBase):
         Returns:
             Action instance initialized with config parameters.
         """
+        # Prefer build_semantics() if defined (avoids @configclass field-reset issues)
+        if hasattr(cfg, "build_semantics"):
+            semantics = cfg.build_semantics()
+        else:
+            semantics = getattr(cfg, "semantics", None)
         return cls(
             agent_assets=cfg.agent_assets,
             timeout=cfg.timeout,
             action_space_info=getattr(cfg, "action_space_info", None),
+            semantics=semantics,
         )

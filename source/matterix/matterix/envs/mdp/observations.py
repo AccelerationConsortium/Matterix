@@ -280,3 +280,94 @@ def object_all_frames(env: ManagerBasedEnv, asset_name: str) -> dict[str, torch.
             pass
 
     return frames_dict
+
+
+##
+# Semantic Observations
+##
+
+
+def object_is_in_contact(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
+    """Get the is_in_contact state of an object from the semantic manager.
+
+    Works with both IsInContactManual and IsInContactPhysics predicates.
+
+    Args:
+        env: The environment instance.
+        asset_name: Name of the asset (e.g., "beaker").
+
+    Returns:
+        Boolean tensor of shape (num_envs, 1).
+    """
+    if not hasattr(env, "semantic_manager"):
+        return torch.zeros((env.num_envs, 1), dtype=torch.bool, device=env.device)
+
+    from matterix.managers.semantics.primitive_semantics import IsInContact
+
+    for key, predicate in env.semantic_manager.full_semantic_predicates.items():
+        if key.startswith(f"{asset_name}/") and isinstance(predicate, IsInContact):
+            return predicate.is_in_contact.unsqueeze(-1)  # (num_envs,) -> (num_envs, 1)
+
+    raise KeyError(
+        f"No IsInContact predicate found for asset '{asset_name}'. "
+        f"Available predicates: {list(env.semantic_manager.full_semantic_predicates.keys())}"
+    )
+
+
+def object_is_heater_on(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
+    """Get the is_heater_on state of an asset from the semantic manager.
+
+    Args:
+        env: The environment instance.
+        asset_name: Name of the heater asset (e.g., "ika_plate").
+
+    Returns:
+        Boolean tensor of shape (num_envs, 1).
+    """
+    if not hasattr(env, "semantic_manager"):
+        return torch.zeros((env.num_envs, 1), dtype=torch.bool, device=env.device)
+
+    from matterix.managers.semantics.primitive_semantics.heat_transfer import IsHeaterOn
+
+    semantic_name = f"{asset_name}/IsHeaterOn"
+    if semantic_name in env.semantic_manager.full_semantic_predicates:
+        predicate = env.semantic_manager.full_semantic_predicates[semantic_name]
+        if isinstance(predicate, IsHeaterOn):
+            return predicate.is_heater_on.unsqueeze(-1)
+
+    raise KeyError(
+        f"No IsHeaterOn predicate found for asset '{asset_name}'. "
+        f"Available predicates: {list(env.semantic_manager.full_semantic_predicates.keys())}"
+    )
+
+
+def object_temperature(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
+    """Get temperature of an object from the semantic manager.
+
+    Args:
+        env: The environment instance.
+        asset_name: Name of the asset (e.g., "beaker", "flask").
+
+    Returns:
+        Temperature tensor of shape (num_envs, 1) in Kelvin.
+
+    Raises:
+        KeyError: If the semantic is not found in the semantic manager.
+    """
+    # Handle early initialization (observation manager calls this to determine shape)
+    if not hasattr(env, "semantic_manager"):
+        # Return dummy tensor with correct shape for initialization
+        return torch.zeros((env.num_envs, 1), device=env.device)
+
+    # Build semantic name: {asset_name}/Temperature
+    semantic_name = f"{asset_name}/Temperature"
+
+    # Access temperature from semantic manager
+    if semantic_name in env.semantic_manager.full_semantic_states:
+        temperature_semantic = env.semantic_manager.full_semantic_states[semantic_name]
+        return temperature_semantic.state.unsqueeze(-1)  # (num_envs,) -> (num_envs, 1)
+    else:
+        raise KeyError(
+            f"Temperature semantic '{semantic_name}' not found. "
+            f"Available semantics: {list(env.semantic_manager.full_semantic_states.keys())}"
+        )

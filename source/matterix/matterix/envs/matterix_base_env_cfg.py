@@ -18,6 +18,7 @@ from matterix.managers import (
     MatterixBaseRecorderCfg,
     ObservationManagerCfg,
 )
+from matterix.managers.semantics import SemanticsCfg
 from matterix.particle_systems import ParticleSystemCfg, ReservedParticleCfg
 from matterix_assets import (
     MatterixArticulationCfg,
@@ -216,7 +217,7 @@ class MatterixBaseEnvCfg:
 
     reserved_particle_systems: list[ReservedParticleCfg] | None = None
 
-    semantics = None
+    semantics: list[SemanticsCfg] | None = None  # global (environment level) semantics
 
     sensors: dict[str, SensorBaseCfg] = {}
 

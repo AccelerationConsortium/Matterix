@@ -27,10 +27,15 @@ class MoveToFrameCfg(MoveToPoseCfg):
     Attributes:
         object: Name of the object with the target frame. REQUIRED.
         frame: Name of the frame to move to (e.g., "grasp", "pre_grasp"). REQUIRED.
+        use_frame_orientation: If True (default), target the frame's full orientation.
+            If False, only target the frame's position and hold current EE orientation.
+            Set to False for placement actions where the robot should keep the orientation
+            it had while grasping rather than matching the target object's orientation.
     """
 
     object: str = MISSING
     frame: str = MISSING
+    use_frame_orientation: bool = True
 
 
 class MoveToFrame(MoveToPose):
@@ -50,6 +55,7 @@ class MoveToFrame(MoveToPose):
         timeout: float,
         position_threshold: float,
         orientation_threshold: float,
+        use_frame_orientation: bool = True,
         action_space_info: ActionSpaceInfo | None = None,
     ):
         """
@@ -60,6 +66,8 @@ class MoveToFrame(MoveToPose):
             timeout: Max time (in seconds) before timeout.
             position_threshold: Distance threshold for success (meters).
             orientation_threshold: Orientation threshold for success (radians).
+            use_frame_orientation: If True, target the frame's full orientation.
+                If False, only target position and hold current EE orientation.
             action_space_info: Optional action space metadata for mask creation.
         """
         # Initialize parent with None targets (will be set on first call)
@@ -76,6 +84,7 @@ class MoveToFrame(MoveToPose):
         # Store frame lookup info
         self.object = object
         self.frame = frame
+        self.use_frame_orientation = use_frame_orientation
         self._frame_initialized = False
 
     def _compute_action_impl(self, scene_data: SceneData, env_ids: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
@@ -98,7 +107,7 @@ class MoveToFrame(MoveToPose):
             # Get target object data
             if self.object not in scene_data.rigid_objects:
                 raise ValueError(
-                    f"Object '{self.object}' not found in scene_data.rigid_objects. "
+                    f"Object '{self.object}' not found in scene_data.rigid_objects from observations. "
                     f"Available: {list(scene_data.rigid_objects.keys())}"
                 )
 
@@ -115,7 +124,11 @@ class MoveToFrame(MoveToPose):
 
             # Frames are already in world frame (transformed by Isaac Lab's FrameTransformer)
             grasp_pos_w = frame_pose.position.to(self.device)
-            grasp_quat_w = frame_pose.orientation.to(self.device) if frame_pose.orientation is not None else None
+            # Optionally ignore frame orientation (e.g., for placement, hold current EE orientation)
+            if self.use_frame_orientation:
+                grasp_quat_w = frame_pose.orientation.to(self.device) if frame_pose.orientation is not None else None
+            else:
+                grasp_quat_w = None
 
             # Apply robot-specific grasp-to-EE offset: ^W T_ee = ^W T_g · ^g T_ee
             if self.action_space_info and self.action_space_info.grasp_to_ee_offset and grasp_quat_w is not None:
@@ -146,6 +159,8 @@ class MoveToFrame(MoveToPose):
         """Reset frame initialization flag when environments are reset."""
         # Frame needs to be re-queried after reset
         self._frame_initialized = False
+        # Reset parent state (_targets_initialized, time_in_threshold, target tensors)
+        super()._reset_impl(env_ids)
 
     @classmethod
     def from_cfg(cls, cfg: MoveToFrameCfg):
@@ -157,5 +172,6 @@ class MoveToFrame(MoveToPose):
             timeout=cfg.timeout,
             position_threshold=cfg.position_threshold,
             orientation_threshold=cfg.orientation_threshold,
+            use_frame_orientation=cfg.use_frame_orientation,
             action_space_info=cfg.action_space_info,
         )

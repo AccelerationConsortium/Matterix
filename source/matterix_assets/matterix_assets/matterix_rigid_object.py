@@ -6,6 +6,11 @@
 """Configuration for a rigid object."""
 
 from dataclasses import MISSING
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from matterix.managers.semantics.semantics_cfg import SemanticCfg
+    from matterix.managers.semantics.semantic_presets import SemanticPreset
 
 import isaaclab.sim as sim_utils
 from isaaclab.assets import RigidObjectCfg
@@ -46,11 +51,28 @@ class MatterixRigidObjectCfg(RigidObjectCfg):
     frames: dict[str, tuple[float, float, float] | OffsetCfg] = {}  # it will be converted to sensors in __post_init__
     sensors: dict[str, FrameTransformerCfg] = {}
 
-    semantic_tags: list[tuple] = []
+    semantic_tags: list[tuple] = []  # Static metadata for classification (e.g., [("class", "beaker")])
+    semantics: "list[SemanticCfg] | SemanticPreset" = []  # Semantic behaviors; accepts a preset or a list of cfgs
 
     def __post_init__(self):
         if hasattr(super(), "__post_init__"):
             super().__post_init__()
+
+        # Normalize semantics: a SemanticPreset (or a list mixing presets and raw cfgs)
+        # must be flattened to a plain list of SemanticsCfg instances.
+        from matterix.managers.semantics.semantic_presets import SemanticPreset  # noqa: F811
+
+        if isinstance(self.semantics, SemanticPreset):
+            self.semantics = self.semantics.to_list()
+        elif isinstance(self.semantics, list):
+            flattened = []
+            for item in self.semantics:
+                if isinstance(item, SemanticPreset):
+                    flattened.extend(item.to_list())
+                else:
+                    flattened.append(item)
+            self.semantics = flattened
+
         # spawn configuration
         self.spawn = sim_utils.UsdFileCfg(
             usd_path=self.usd_path,

@@ -7,7 +7,11 @@ from collections.abc import Sequence
 
 import isaaclab.envs.mdp as mdp
 from isaaclab.managers import EventTermCfg
-from isaaclab.managers.recorder_manager import RecorderManagerBaseCfg, RecorderTerm, RecorderTermCfg
+from isaaclab.managers.recorder_manager import (
+    RecorderManagerBaseCfg,
+    RecorderTerm,
+    RecorderTermCfg,
+)
 from isaaclab.utils import configclass
 
 

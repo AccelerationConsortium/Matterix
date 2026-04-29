@@ -117,7 +117,7 @@ class ObservationManagerCfg:
 ##
 @configclass
 class FrankaBeakerLiftEnvTestCfg(MatterixBaseEnvCfg):
-    env_spacing = 5.0
+    env_spacing = 10.0
 
     objects = {
         "beaker": BEAKER_500ML_INST_CFG(pos=(0.6, 0.05, 0.05)),

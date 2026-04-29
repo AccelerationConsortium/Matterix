@@ -95,6 +95,10 @@ class StateMachine:
 
         # Action dictionary (per-agent actions)
         self.action_dict: dict[str, torch.Tensor] = {}
+        self._agent_action_space_info: dict[str, Any] = {}  # action_space_info per agent, for reinitialization
+        self._envs_needing_reinit: torch.Tensor | None = None  # env_ids to reinitialize on next step
+        self._pending_semantics: list = []  # Collected semantic actions from current step
+        self._last_action_result: torch.Tensor | dict | None = None  # last valid result for no-agent steps
 
         # Timing tracking for performance monitoring (only if enabled)
         self.step_times: list[float] = []
@@ -111,8 +115,36 @@ class StateMachine:
         self.action_sequence_failure = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
         # Clear action dict so first action gets fresh robot state from observations
         self.action_dict.clear()
+        self._last_action_result = None
         for action in self.actions:
             action.reset()
+
+    def reset_envs(self, env_ids: torch.Tensor) -> None:
+        """Reset state machine for specific environments (e.g. after mid-episode env auto-reset).
+
+        Call this when the environment resets a subset of envs due to episode timeout or
+        termination, so those envs restart the workflow from action 0.
+
+        Action dict rows are NOT zeroed here — they are deferred until the next sm.step() call,
+        where they are reinitialized from fresh scene_data (after obs is ingested). This prevents
+        robots from being commanded to world origin during the one step between env-reset and
+        scene_data refresh.
+
+        Args:
+            env_ids: 1-D tensor of environment indices to reset.
+        """
+        if env_ids.numel() == 0:
+            return
+        self.current_action_idx[env_ids] = 0
+        self.action_sequence_success[env_ids] = False
+        self.action_sequence_failure[env_ids] = False
+        # Mark these envs for action_dict reinitialization on the next step (after scene_data refresh)
+        if self._envs_needing_reinit is None:
+            self._envs_needing_reinit = env_ids
+        else:
+            self._envs_needing_reinit = torch.unique(torch.cat([self._envs_needing_reinit, env_ids]))
+        for action in self.actions:
+            action.reset(env_ids)
 
     def _initialize_action_dict_for_agent(
         self,
@@ -348,9 +380,9 @@ class StateMachine:
             self.step()
         return self.action_sequence_success, self.frame_history
 
-    def step(
+    def step(  # noqa: C901
         self, obs: dict | None = None, reward=None, terminated=None, truncated=None
-    ) -> dict[str, torch.Tensor] | torch.Tensor:
+    ) -> tuple[dict[str, torch.Tensor] | torch.Tensor, list | None]:
         """Advance exactly one step for all environments.
 
         Executes the current action for each active environment, updates per-env
@@ -363,8 +395,12 @@ class StateMachine:
             truncated: Truncation flags (not used currently, reserved for future).
 
         Returns:
-            dict[str, torch.Tensor] or torch.Tensor: Action dictionary mapping agent names
-            to action tensors. If only one agent, returns single tensor for backward compatibility.
+            tuple containing:
+                - action_dict: dict[str, torch.Tensor] or torch.Tensor - Action dictionary mapping
+                  agent names to action tensors. If only one agent, returns single tensor for
+                  backward compatibility.
+                - semantic_actions: list[SemanticInfo] or None - Semantic state changes to apply
+                  this step, or None if no semantic actions occurred.
         """
         step_start = time.perf_counter() if self.enable_timing else None
         timings = {} if self.enable_timing else None
@@ -376,6 +412,41 @@ class StateMachine:
             self.update_scene_data_from_obs(obs)
         if self.enable_timing:
             timings["obs_update"] = time.perf_counter() - obs_update_start
+
+        # Once scene_data is ready, ensure _last_action_result is initialized so
+        # no-agent steps (Wait, SemanticAction) at the start of a sequence can return
+        # a valid "hold current pose" tensor instead of None.
+        if self._last_action_result is None and self.scene_data is not None:
+            # Collect all unique agents across the full action sequence
+            agent_action_space: dict[str, "ActionSpaceInfo"] = {}
+            for action in self.actions:
+                for agent_name in action.agent_assets:
+                    if agent_name not in agent_action_space:
+                        agent_action_space[agent_name] = action.action_space_info
+            if agent_action_space:
+                init_dict = {
+                    agent_name: self._initialize_action_dict_for_agent(
+                        agent_name,
+                        (info.total_dim if info is not None else 1),
+                        info,
+                    )
+                    for agent_name, info in agent_action_space.items()
+                }
+                # Mirror the same single-vs-multi convention used in the return logic below
+                self._last_action_result = list(init_dict.values())[0] if len(init_dict) == 1 else init_dict
+
+        # Reinitialize action_dict rows for envs that were reset since the last step.
+        # Done here (after scene_data is fresh) so robots hold their post-reset pose, not zeros.
+        if self._envs_needing_reinit is not None:
+            reinit_ids = self._envs_needing_reinit
+            for agent_name, action_tensor in self.action_dict.items():
+                action_space_info = self._agent_action_space_info.get(agent_name)
+                fresh = self._initialize_action_dict_for_agent(agent_name, action_tensor.shape[-1], action_space_info)
+                action_tensor[reinit_ids] = fresh[reinit_ids]
+            self._envs_needing_reinit = None
+
+        # Clear semantic actions from previous step
+        self._pending_semantics.clear()
 
         # Note: We do NOT clear action_dict here. It's preserved across steps so that
         # partial actions (like gripper) can maintain position/orientation from previous actions.
@@ -401,11 +472,15 @@ class StateMachine:
             # Actions now return tensor + dimension mask for partial updates
             if self.enable_timing:
                 compute_start = time.perf_counter()
-            action_tensor, action_dim_mask, env_success_mask, env_timeout_mask = action.compute_action(
-                self.scene_data, env_ids
+            action_tensor, action_dim_mask, env_success_mask, env_timeout_mask, semantic_actions = (
+                action.compute_action(self.scene_data, env_ids)
             )
             if self.enable_timing:
                 action_compute_times.append(time.perf_counter() - compute_start)
+
+            # Collect semantic actions
+            if semantic_actions is not None:
+                self._pending_semantics.extend(semantic_actions)
 
             if self.enable_timing:
                 device_transfer_start = time.perf_counter()
@@ -428,6 +503,7 @@ class StateMachine:
                         action_tensor.shape[-1],
                         action.action_space_info,
                     )
+                    self._agent_action_space_info[agent_name] = action.action_space_info
                 # Apply partial update using mask (last-write-wins strategy)
                 # action_dim_mask (action_dim,): which dimensions to update
                 # env_ids (num_active_envs,): which environments to update
@@ -468,10 +544,16 @@ class StateMachine:
         # Return dict or single tensor for backward compatibility
         if self.enable_timing:
             return_prep_start = time.perf_counter()
-        if len(self.action_dict) == 1:
+        if len(self.action_dict) == 0:
+            # No agents controlled this step (e.g. Wait, SemanticAction).
+            # Return last valid action to hold the robot at its last commanded pose.
+            result = self._last_action_result
+        elif len(self.action_dict) == 1:
             result = list(self.action_dict.values())[0]
+            self._last_action_result = result
         else:
             result = self.action_dict
+            self._last_action_result = result
 
         self.print_status()
         if self.enable_timing:
@@ -483,7 +565,9 @@ class StateMachine:
             self.step_times.append(step_time)
             self._print_timing_report(step_time, timings)
 
-        return result
+        # Return both action dict and semantic actions
+        semantic_actions = self.get_semantic_actions()
+        return result, semantic_actions
 
     def _print_timing_report(self, step_time: float, timings: dict[str, float]) -> None:
         """Print color-coded timing report for current step.
@@ -857,3 +941,11 @@ class StateMachine:
             raise NotImplementedError(
                 "Flat tensor parsing not yet implemented. ObservationManager should return dict with named fields."
             )
+
+    def get_semantic_actions(self) -> list | None:
+        """Get semantic actions from the last step.
+
+        Returns:
+            List of SemanticInfo or None if no semantic actions were emitted.
+        """
+        return self._pending_semantics if self._pending_semantics else None

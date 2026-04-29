@@ -55,6 +55,7 @@ class TABLE_SEATTLE_INST_Cfg(MatterixStaticObjectCfg):
     prim_path = default_prim_path
     usd_path = f"{ISAAC_NUCLEUS_DIR}/Props/Mounts/SeattleLabTable/table_instanceable.usd"
     scale = (1.0, 1.0, 1.0)
+    mass = 50.0  # Estimated mass in kg (for semantic simulations)
 
     rot = (0.707, 0, 0, 0.707)  # 90 degrees around y-axis
 

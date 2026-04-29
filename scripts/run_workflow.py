@@ -83,6 +83,9 @@ def main():
     if isinstance(workflow_value, dict):
         description = workflow_value.get("description", "No description")
         actions = workflow_value.get("actions", [])
+    elif isinstance(workflow_value, list):
+        description = "No description"
+        actions = workflow_value
     else:
         description = getattr(workflow_value, "description", "No description")
         actions = [workflow_value]
@@ -115,15 +118,20 @@ def main():
 
             # Run until workflow completes or fails
             while not (sm.action_sequence_success | sm.action_sequence_failure).all():
-                action = sm.step(obs).to(env.device)
-                obs, _, _, _, _ = env.step(action)
+                action, semantic_actions = sm.step(obs)
+                action = action.to(env.device)
+                obs, _, terminated, truncated, _ = env.step(action, semantic_actions=semantic_actions)
                 step_count += 1
+
+                # Reset SM for any envs the environment auto-reset (episode timeout/termination)
+                reset_ids = (terminated | truncated).nonzero(as_tuple=False).flatten()
+                if reset_ids.numel() > 0:
+                    sm.reset_envs(reset_ids)
 
                 # Print status every 50 steps
                 if step_count % 50 == 0:
                     sm.print_status(step=step_count, episode=episode_count)
 
-            # Episode finished
             sm.print_status(step=step_count, episode=episode_count)
 
     env.close()

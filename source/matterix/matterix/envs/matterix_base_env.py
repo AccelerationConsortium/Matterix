@@ -16,6 +16,7 @@ from typing import Any, ClassVar
 
 from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.version import get_version
+from matterix.managers.semantics import SemanticManager
 from matterix.particle_systems import Particles
 from matterix_assets import (
     MatterixArticulationCfg,
@@ -35,6 +36,7 @@ from isaaclab.managers import (
     TerminationManager,
 )
 from isaaclab.scene import InteractiveSceneCfg
+from isaaclab.sensors import ContactSensorCfg
 from isaaclab.sim.spawners.from_files.from_files_cfg import GroundPlaneCfg
 from isaaclab.ui.widgets import ManagerLiveVisualizer
 
@@ -81,6 +83,9 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
 
     cfg: MatterixBaseEnvCfg
     """Configuration for the environment."""
+
+    semantic_manager: SemanticManager
+    """semantic manager for the environment."""
 
     def __init__(self, cfg: MatterixBaseEnvCfg, render_mode: str | None = None, **kwargs):
         """Initialize the environment.
@@ -134,6 +139,8 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             self.particle_systems[particle_name] = Particles(particle_name, particle_cfg, self)
 
         self.spawn_reserve_particle_systems()
+        self.semantic_manager = SemanticManager(self)
+        self.semantic_manager.initialize()
 
     """
     Properties.
@@ -199,7 +206,7 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
     Operations - MDP
     """
 
-    def step(self, action: torch.Tensor) -> VecEnvStepReturn:
+    def step(self, action: torch.Tensor, semantic_actions: list | None = None) -> VecEnvStepReturn:
         """Execute one time-step of the environment's dynamics and reset terminated environments.
 
         Unlike the :class:`ManagerBasedEnv.step` class, the function performs the following operations:
@@ -214,6 +221,9 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
 
         Args:
             action: The actions to apply on the environment. Shape is (num_envs, action_dim).
+            semantic_actions: Optional list of SemanticInfo objects describing semantic state
+                changes to apply this step (e.g., temperature changes, contact events). If None,
+                no semantic actions are applied. Typically provided by StateMachine.
 
         Returns:
             A tuple containing the observations, rewards, resets (terminated and truncated) and extras.
@@ -244,6 +254,9 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             # update buffers at sim dt
             self.scene.update(dt=self.physics_dt)
 
+        # Update semantic states (temperature, heat transfer, etc.)
+        # Pass semantic actions from state machine (if any)
+        self.semantic_manager.step(semantic_actions=semantic_actions)
         # post-step:
         # -- update env counters (used for curriculum generation)
         self.episode_length_buf += 1  # step in current episode (per env)
@@ -421,6 +434,10 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         for particle_system in self.reserved_particle_systems.values():
             particle_system.reset(env_ids=env_ids)
 
+        # reset semantic states to initial values BEFORE event terms fire
+        # EventTerms (e.g. randomize_temperature) run next and may override specific assets
+        self.semantic_manager.reset(env_ids)
+
         # apply events such as randomizations for environments that need a reset
         if "reset" in self.event_manager.available_modes:
             env_step_count = self._sim_step_counter // self.cfg.decimation
@@ -492,7 +509,8 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         if seed is not None:
             self.seed(seed)
 
-        # reset state of scene
+        # reset state of scene (this includes applying reset events for randomization)
+        # note: semantic_manager.reset() is called inside _reset_idx() before event terms fire
         self._reset_idx(env_ids)
 
         # update articulation kinematics
@@ -501,7 +519,6 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         # if sensors are added to the scene, make sure we render to reflect changes in reset
         if self.sim.has_rtx_sensors() and self.cfg.rerender_on_reset:
             self.sim.render()
-
         # trigger recorder terms for post-reset calls
         self.recorder_manager.record_post_reset(env_ids)
 
@@ -565,6 +582,8 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             sensor_cfg.prim_path += f"_{sensor_name}"
             setattr(self.cfg.scene, sensor_name, sensor_cfg)
 
+        self._inject_contact_sensors()
+
         self.add_action_terms(self.cfg.actions, self.cfg.scene)
         self.add_event_terms(self.cfg.events, self.cfg.scene)
 
@@ -587,6 +606,65 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
                     init_state=AssetBaseCfg.InitialStateCfg(pos=light_cfg.pos, rot=light_cfg.rot),
                 ),
             )
+
+    def _inject_contact_sensors(self):
+        """For every asset with an IsInContactCfg, build and register a ContactSensorCfg.
+
+        Called at the end of setup_scene() after all asset prim_paths are finalised.
+        Resolves relative filter paths (e.g. "robot/panda_leftfinger", "ika_plate") to
+        full scene prim paths by prepending the appropriate prefix:
+          - articulated assets -> "{ENV_REGEX_NS}/Articulations_{asset_name}"
+          - rigid/static objects -> "{ENV_REGEX_NS}/RigidObjects_{asset_name}"
+        """
+        from matterix.managers.semantics.primitive_semantics import IsInContactPhysicsCfg
+
+        all_assets = {**self.cfg.articulated_assets, **self.cfg.objects}
+
+        for asset_name, asset_cfg in all_assets.items():
+            for sem_cfg in asset_cfg.semantics:
+                if not (isinstance(sem_cfg, IsInContactPhysicsCfg) and sem_cfg.filter_prim_paths_expr):
+                    continue
+
+                # Resolve each relative filter path to a full scene prim path.
+                resolved_paths = []
+                for rel_path in sem_cfg.filter_prim_paths_expr:
+                    contact_asset_name = rel_path.split("/")[0]
+                    rest = rel_path[len(contact_asset_name) :]  # "" or "/panda_leftfinger"
+                    if contact_asset_name in self.cfg.articulated_assets:
+                        prefix = self.cfg.articulated_assets[contact_asset_name].prim_path
+                    elif contact_asset_name in self.cfg.objects:
+                        prefix = self.cfg.objects[contact_asset_name].prim_path
+                    else:
+                        raise ValueError(
+                            f"[IsInContactCfg] filter_prim_paths_expr entry '{rel_path}' "
+                            f"references unknown asset '{contact_asset_name}'. "
+                            f"Available assets: {list(all_assets.keys())}"
+                        )
+                    resolved_paths.append(prefix + rest)
+
+                # Build the ContactSensorCfg.
+                # prim_path="" — setup_scene() already prepended the asset prim path.
+                sensor_cfg = ContactSensorCfg(
+                    prim_path="",
+                    update_period=0.0,
+                    history_length=4,
+                    debug_vis=True,
+                    filter_prim_paths_expr=resolved_paths,
+                )
+
+                # Register in the scene under "contact_sensor_{asset_name}".
+                sensor_scene_key = f"contact_sensor_{asset_name}"
+                sensor_cfg.prim_path = asset_cfg.prim_path + sensor_cfg.prim_path
+                setattr(self.cfg.scene, sensor_scene_key, sensor_cfg)
+
+                # Ensure contact sensors are activated on the asset spawn.
+                if hasattr(asset_cfg, "activate_contact_sensors"):
+                    asset_cfg.activate_contact_sensors = True
+                elif hasattr(asset_cfg, "spawn") and hasattr(asset_cfg.spawn, "activate_contact_sensors"):
+                    asset_cfg.spawn.activate_contact_sensors = True
+
+                print(f"[setup_scene] Registered ContactSensor '{sensor_scene_key}' with filters: {resolved_paths}")
+                break  # one contact sensor per asset
 
     def setup_recorder(self):
         """Setup the recorder manager."""

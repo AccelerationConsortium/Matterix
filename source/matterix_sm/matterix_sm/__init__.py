@@ -32,6 +32,7 @@ from .compositional_actions import (
     CompositionalAction,
     CompositionalActionCfg,
     PickObjectCfg,
+    PlaceObjectCfg,
 )
 
 # Import math utilities
@@ -50,8 +51,14 @@ from .primitive_actions import (
     MoveToFrameCfg,
     OpenGripper,
     OpenGripperCfg,
+    SemanticAction,
+    SemanticActionCfg,
+    Wait,
+    WaitCfg,
 )
 from .scene_data import ArticulationData, Pose, RigidObjectData, SceneData
+from .semantic_actions import TurnOnHeaterCfg
+from .semantic_info import SemanticInfo
 from .state_machine import StateMachine
 
 __all__ = [
@@ -82,8 +89,17 @@ __all__ = [
     "OpenGripperCfg",
     "CloseGripper",
     "CloseGripperCfg",
+    "SemanticAction",
+    "SemanticActionCfg",
+    "Wait",
+    "WaitCfg",
+    # Semantic support
+    "SemanticInfo",
+    # Semantic actions (device control)
+    "TurnOnHeaterCfg",
     # Compositional actions
     "CompositionalAction",
     "CompositionalActionCfg",
     "PickObjectCfg",
+    "PlaceObjectCfg",
 ]

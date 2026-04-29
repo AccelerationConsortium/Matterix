@@ -204,8 +204,8 @@ class FRANKA_PANDA_CFG(MatterixArticulationCfg):
             joint_names_expr=["panda_finger_joint.*"],
             effort_limit=200.0,
             velocity_limit=0.2,
-            stiffness=2e3,
-            damping=1e2,
+            stiffness=5e2,
+            damping=5e1,
         ),
     }
     soft_joint_pos_limit_factor = 1.0
@@ -284,6 +284,7 @@ class FRANKA_PANDA_CFG(MatterixArticulationCfg):
         ),
     }
     semantic_tags = [("class", "robot")]
+    mass = 20.0  # kg
 
 
 @configclass

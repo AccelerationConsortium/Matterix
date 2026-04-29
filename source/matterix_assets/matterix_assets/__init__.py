@@ -8,6 +8,7 @@ import os
 import toml
 
 from .constants import MATTERIX_ASSETS_DATA_DIR, MATTERIX_ASSETS_EXT_DIR
+from .equipment import *
 from .infrastructure import *
 from .labware import *
 from .matterix_articulation import MatterixArticulationCfg

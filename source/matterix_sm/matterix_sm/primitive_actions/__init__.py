@@ -27,6 +27,8 @@ from .gripper import (
 from .move_relative import MoveRelative, MoveRelativeCfg
 from .move_to_frame import MoveToFrame, MoveToFrameCfg
 from .move_to_pose import MoveToPose, MoveToPoseCfg
+from .semantic_action import SemanticAction, SemanticActionCfg
+from .wait import Wait, WaitCfg
 
 __all__ = [
     # Base class
@@ -45,4 +47,10 @@ __all__ = [
     "OpenGripperCfg",
     "CloseGripper",
     "CloseGripperCfg",
+    # Semantic actions
+    "SemanticAction",
+    "SemanticActionCfg",
+    # Wait action
+    "Wait",
+    "WaitCfg",
 ]
