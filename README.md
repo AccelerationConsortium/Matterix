@@ -36,7 +36,7 @@ pip install --upgrade pip
 # Install a CUDA-enabled PyTorch
 pip install -U torch==2.7.0 torchvision==0.22.0 --index-url https://download.pytorch.org/whl/cu128
 # Install the Isaac Lab packages along with Isaac Sim:
-pip install isaaclab[isaacsim,all]==2.3.0 --extra-index-url https://pypi.nvidia.com
+pip install "isaaclab[isaacsim,all]==2.3.0" --extra-index-url https://pypi.nvidia.com
 ```
 For advanced installation options, refer to [installation guide](https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/index.html).
 
@@ -65,11 +65,11 @@ For advanced installation options, refer to [installation guide](https://isaac-s
     # Install Matterix packages in editable mode
     # This installs: matterix_sm, matterix_assets, matterix_tasks, and matterix
     # matterix_sm will auto-detect Isaac Lab and include full functionality
-    python -m pip install -e source/*
+    python -m pip install -r source.txt
 
     # ─── Fallback: If Isaac Lab is not installed in the active env ───
     # Ensure ${ISAACLAB_PATH} and ${ISAACSIM_PATH} are set in your terminal before running:
-    ./matterix.sh -p -m pip install -e source/*
+    ./matterix.sh -p -m pip install -r source.txt
     ```
 
 - If you are using Python venv that has Isaac Lab installed, install the library in editable mode using:
@@ -80,7 +80,7 @@ For advanced installation options, refer to [installation guide](https://isaac-s
     # .\<path-to-your-venv>\Scripts\activate  # On Windows
 
     # Install Matterix packages in editable mode
-    python -m pip install -e source/*
+    python -m pip install -r source.txt
     ```
 
 ### Package Structure
@@ -98,7 +98,7 @@ MATteRIX consists of four installable packages:
 
 4. **matterix** - Core simulation framework (depends on matterix_sm)
 
-The command `python -m pip install -e source/*` installs all packages with optimal configuration.
+The command `python -m pip install -r source.txt` installs all packages with optimal configuration.
 
 ## Workflows
 
