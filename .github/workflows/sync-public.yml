@@ -1,0 +1,21 @@
+name: Sync to Public Repo
+on:
+  push:
+    branches:
+      - main
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Push to public repo
+        env:
+          PAT: ${{ secrets.PUBLIC_REPO_PAT }}
+        run: |
+          set -euo pipefail
+          git remote add public "https://x-access-token:${PAT}@github.com/AccelerationConsortium/Matterix.git"
+          git push --no-force public HEAD:refs/heads/main
