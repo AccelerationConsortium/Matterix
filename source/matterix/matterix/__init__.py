@@ -10,3 +10,4 @@ Python module serving as matterix project.
 
 from .envs import *
 from .managers import *
+from .devices import *
