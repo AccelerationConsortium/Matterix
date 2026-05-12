@@ -11,7 +11,7 @@ controllers).
 
 Adapted from IsaacLab's teleop_se3_agent.py
 
-Usage Example: python scripts/Labverse/teleop_vr.py --task Isaac-Stack-Cube-Franka-IK-Rel-Skillgen-v0 --enable_pinocchio --teleop_device handtracking
+Usage Example: python scripts/Labverse/teleop_vr.py --enable_pinocchio --task Matterix-Test-VR-Franka-v1 --teleop_device motion_controllers
 Example 2: python scripts/Labverse/teleop_vr.py --enable_pinocchio --task Isaac-PickPlace-Locomanipulation-G1-Abs-v0 --teleop_device motion_controllers
 
 
@@ -45,12 +45,6 @@ parser.add_argument(
     action="store_true",
     default=False,
     help="Enable Pinocchio.",
-)
-parser.add_argument(
-    "--mat_task",
-    type=str,
-    default=None,
-    help="Name of Matterix task."
 )
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)

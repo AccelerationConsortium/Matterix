@@ -153,7 +153,7 @@ class FrankaCubeStackSkillgenEnvCfg(stack_joint_pos_env_cfg.FrankaCubeStackEnvCf
                     rot_sensitivity=0.05,
                     sim_device=self.sim.device,
                 ),
-                "motion_controller": OpenXRDeviceCfg(
+                "motion_controllers": OpenXRDeviceCfg(
                     retargeters=[
                         Se3RelVRRetargeterCfg(
                             bound_hand=DeviceBase.TrackingTarget.CONTROLLER_RIGHT,
