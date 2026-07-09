@@ -36,7 +36,7 @@ pip install --upgrade pip
 # Install a CUDA-enabled PyTorch
 pip install -U torch==2.7.0 torchvision==0.22.0 --index-url https://download.pytorch.org/whl/cu128
 # Install the Isaac Lab packages along with Isaac Sim:
-pip install "isaaclab[isaacsim,all]==2.3.0" --extra-index-url https://pypi.nvidia.com
+python -m pip install "isaaclab[isaacsim,all]==2.3.2.post1" --extra-index-url https://pypi.nvidia.com
 ```
 For advanced installation options, refer to [installation guide](https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/index.html).
 
