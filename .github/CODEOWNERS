@@ -15,18 +15,18 @@
 
 
 # Core Framework
-/source/ @kouroshD @arjunsohal12 @z-ryan1
+/source/ @kouroshD 
 
 # Standalone Scripts
-/scripts/ @kouroshD @arjunsohal12 @z-ryan1
+/scripts/ @kouroshD 
 
 # Github Actions
 # This list is for people wanting to be notified every time there's a change
 # related to Github Actions
-/.github/ @kouroshD @arjunsohal12 @z-ryan1
+/.github/ @kouroshD 
 
 # Visual Studio Code
-/.vscode/ @kouroshD @arjunsohal12 @z-ryan1
+/.vscode/ @kouroshD 
 
 # Infrastructure (Docker, Docs, Tools)
-/docker/ @kouroshD @arjunsohal12 @z-ryan1
+/docker/ @kouroshD 
