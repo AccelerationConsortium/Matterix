@@ -10,6 +10,7 @@ configuring the environment instances, viewer settings, and simulation parameter
 """
 
 from dataclasses import MISSING
+from typing import Literal
 
 from matterix.envs import mdp
 from matterix.managers import (
@@ -236,6 +237,85 @@ class MatterixBaseEnvCfg:
     gpu_found_lost_aggregate_pairs_capacity = 1024 * 1024 * 4
     gpu_total_aggregate_pairs_capacity = 16 * 1024
     friction_correlation_distance = 0.00625
+
+    def prepare_for_video_rec(
+        self,
+        fps: int = 60,
+        resolution: tuple[int, int] = (3840, 2160),
+        render: Literal["default", "balanced", "quality", "pathtracing"] = "pathtracing",
+        eye: tuple[float, float, float] | None = None,
+        lookat: tuple[float, float, float] | None = None,
+    ) -> "MatterixBaseEnvCfg":
+        """Configure viewer + sim render for video capture. Must be called before gym.make.
+
+        Defaults to 60 fps, 4K path-traced. Presets mirror pretty-isaac:
+
+            "default"      headless kit defaults: no translucency/reflections/GI/AO,
+                           DLSS performance, 1 spp — fast, low quality
+            "balanced"     bare ``RenderCfg(rendering_mode="balanced")``
+            "quality"      rasterized with translucency, reflections, GI, AO,
+                           shadows, DLAA, DL denoiser, direct lighting, 4 spp
+            "pathtracing"  path-traced: DLAA + DL denoiser + spp=64,
+                           totalSpp=512, maxBounces=6
+
+        Returns self so calls can be chained.
+        """
+        import warnings
+
+        physics_rate = round(1.0 / self.sim.dt)
+        if fps > physics_rate:
+            raise ValueError(
+                f"Requested {fps} fps but physics runs at {physics_rate} Hz. "
+                f"Either request fps <= {physics_rate} or decrease sim.dt "
+                f"(currently {self.sim.dt}) to raise the physics rate."
+            )
+
+        render_interval = physics_rate // fps
+        actual_fps = physics_rate // render_interval
+        if actual_fps != fps:
+            warnings.warn(
+                f"Requested {fps} fps, but the minimum >= {fps} that evenly "
+                f"divides {physics_rate} Hz is {actual_fps} fps "
+                f"(render_interval={render_interval}). Using {actual_fps} fps."
+            )
+
+        self.sim.render_interval = render_interval
+        self._recording_fps = actual_fps
+
+        presets: dict[str, RenderCfg] = {
+            "default": RenderCfg(),
+            "balanced": RenderCfg(rendering_mode="balanced"),
+            "quality": RenderCfg(
+                rendering_mode="quality",
+                enable_translucency=True,
+                enable_reflections=True,
+                enable_global_illumination=True,
+                enable_ambient_occlusion=True,
+                enable_shadows=True,
+                enable_dl_denoiser=True,
+                antialiasing_mode="DLAA",
+                samples_per_pixel=4,
+                enable_direct_lighting=True,
+            ),
+            "pathtracing": RenderCfg(
+                rendering_mode="quality",
+                antialiasing_mode="DLAA",
+                enable_dl_denoiser=True,
+                carb_settings={
+                    "/rtx/rendermode": "PathTracing",
+                    "/rtx/pathtracing/spp": 64,
+                    "/rtx/pathtracing/totalSpp": 512,
+                    "/rtx/pathtracing/maxBounces": 6,
+                },
+            ),
+        }
+        self.sim.render = presets[render]
+        self.viewer.resolution = resolution
+        if eye is not None:
+            self.viewer.eye = eye
+        if lookat is not None:
+            self.viewer.lookat = lookat
+        return self
 
     def __post_init__(self):
         """Post initialization."""

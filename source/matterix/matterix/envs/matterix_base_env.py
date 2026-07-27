@@ -18,6 +18,7 @@ from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.version import get_version
 from matterix.managers.semantics import SemanticManager
 from matterix.particle_systems import Particles
+from matterix.utils.real_time_video_recorder import RealTimeVideoRecorder
 from matterix_assets import (
     MatterixArticulationCfg,
     MatterixRigidObjectCfg,
@@ -142,6 +143,9 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         self.semantic_manager = SemanticManager(self)
         self.semantic_manager.initialize()
 
+        # video recorder; idle until start_recording() (see start_recording/save_video)
+        self._video_recorder = RealTimeVideoRecorder(self)
+
     """
     Properties.
     """
@@ -235,7 +239,7 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
 
         # check if we need to do rendering within the physics loop
         # note: checked here once to avoid multiple checks within the loop
-        is_rendering = self.sim.has_gui() or self.sim.has_rtx_sensors()
+        is_rendering = self.sim.has_gui() or self.sim.has_rtx_sensors() or self._video_recorder.is_recording
 
         # perform physics stepping
         for _ in range(self.cfg.decimation):
@@ -251,6 +255,7 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             #    If a camera needs rendering at a faster frequency, this will lead to unexpected behavior.
             if self._sim_step_counter % self.cfg.sim.render_interval == 0 and is_rendering:
                 self.sim.render()
+                self._video_recorder.capture_step()
             # update buffers at sim dt
             self.scene.update(dt=self.physics_dt)
 
@@ -299,6 +304,7 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         # -- compute observations
         # note: done after reset to get the correct observations for reset envs
         self.obs_buf = self.observation_manager.compute()
+
         # return observations, rewards, resets and extras
         return (
             self.obs_buf,
@@ -307,6 +313,22 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             self.reset_time_outs,
             self.extras,
         )
+
+    """
+    Operations - Video recording.
+    """
+
+    def start_recording(self) -> None:
+        """Begin buffering frames from every subsequent ``step()``."""
+        self._video_recorder.start()
+
+    def save_video(self, path: str) -> None:
+        """Flush buffered frames to an mp4 at ``path`` and stop recording."""
+        self._video_recorder.save(path)
+
+    def stop_recording(self) -> None:
+        """Discard any buffered frames without saving."""
+        self._video_recorder.stop()
 
     def render(self, recompute: bool = False) -> np.ndarray | None:
         """Run rendering without stepping through the physics.

@@ -10,7 +10,7 @@ The state machine orchestrates sequential actions across parallel environments o
 
 Usage:
     ./matterix.sh -p scripts/run_workflow.py --task Matterix-Test-Beaker-Lift-Franka-v1 --workflow pickup_beaker
-    ./matterix.sh -p scripts/run_workflow.py --num_envs 32
+    ./matterix.sh -p scripts/run_workflow.py --task Matterix-Test-Beaker-Lift-Franka-v1 --workflow pickup_beaker --record_video
 """
 
 """Launch Omniverse Toolkit first."""
@@ -40,14 +40,27 @@ parser.add_argument(
     help="Environment/task name.",
 )
 parser.add_argument("--workflow", type=str, default="pickup_beaker", help="Name of the workflow to run.")
+parser.add_argument("--record_video", action="store_true", default=False, help="Record a video of each episode.")
+parser.add_argument(
+    "--video_dir",
+    type=str,
+    default="out/videos",
+    help="Directory to save recorded videos (default: out/videos).",
+)
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
 
+if args_cli.record_video and args_cli.headless and not args_cli.enable_cameras:
+    parser.error("--record_video in headless mode requires --enable_cameras (the RTX renderer must be loaded for frame capture).")
+
 # Launch omniverse app
-app_launcher = AppLauncher(headless=args_cli.headless)
+app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
 """Rest everything else."""
+
+import datetime
+import os
 
 import gymnasium as gym
 import torch
@@ -95,12 +108,18 @@ def main():
     print(f"Description: {description}\n")
 
     # Create environment and state machine
-    env = gym.make(args_cli.task, cfg=env_cfg).unwrapped
+    render_mode = "rgb_array" if args_cli.record_video else None
+    env = gym.make(args_cli.task, cfg=env_cfg, render_mode=render_mode).unwrapped
     env.reset()
 
     # Create state machine with required parameters from environment
     sm = StateMachine(num_envs=env.num_envs, dt=env.step_dt, device=env.device)
     sm.set_action_sequence(actions)
+
+    # Timestamp shared across all episodes of this run
+    run_ts = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    task_slug = args_cli.task.replace("/", "_")
+    workflow_slug = args_cli.workflow.replace("/", "_")
 
     episode_count = 0
 
@@ -115,6 +134,9 @@ def main():
             print(f"\n{'=' * 80}")
             print(f"EPISODE {episode_count}")
             print(f"{'=' * 80}\n")
+
+            if args_cli.record_video:
+                env.start_recording()
 
             # Run until workflow completes or fails
             while not (sm.action_sequence_success | sm.action_sequence_failure).all():
@@ -133,6 +155,13 @@ def main():
                     sm.print_status(step=step_count, episode=episode_count)
 
             sm.print_status(step=step_count, episode=episode_count)
+
+            if args_cli.record_video:
+                video_path = os.path.join(
+                    args_cli.video_dir, f"{task_slug}_{workflow_slug}_ep{episode_count}_{run_ts}.mp4"
+                )
+                env.save_video(video_path)
+                print(f"[INFO]: Video saved to {video_path}")
 
     env.close()
 
