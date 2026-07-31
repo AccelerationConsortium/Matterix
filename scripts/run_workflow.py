@@ -40,11 +40,14 @@ parser.add_argument(
     help="Environment/task name.",
 )
 parser.add_argument("--workflow", type=str, default="pickup_beaker", help="Name of the workflow to run.")
+parser.add_argument("--record_path", type=str, default=None, help="Optional unique HDF5 recorder path for this run.")
+parser.add_argument("--episodes", type=int, default=0, help="Stop after this many episodes; 0 keeps the existing continuous behavior.")
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
 
 # Launch omniverse app
-app_launcher = AppLauncher(headless=args_cli.headless)
+# Forward the complete parsed launcher configuration so --livestream reaches WebRTC.
+app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
 """Rest everything else."""
@@ -66,6 +69,8 @@ def main():
         num_envs=args_cli.num_envs,
         use_fabric=not args_cli.disable_fabric,
     )
+    if args_cli.record_path is not None:
+        env_cfg.record_path = args_cli.record_path
 
     # Validate workflow exists
     if not hasattr(env_cfg, "workflows") or not env_cfg.workflows:
@@ -133,6 +138,8 @@ def main():
                     sm.print_status(step=step_count, episode=episode_count)
 
             sm.print_status(step=step_count, episode=episode_count)
+            if args_cli.episodes > 0 and episode_count >= args_cli.episodes:
+                break
 
     env.close()
 
