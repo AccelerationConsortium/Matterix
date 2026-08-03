@@ -6,7 +6,13 @@
 import gymnasium as gym
 import os
 
-from . import test_franka_beaker_lift, test_franka_beakers, test_particle_systems, test_semantics_heat_transfer
+from . import (
+    test_franka_beaker_lift,
+    test_franka_beakers,
+    test_particle_systems,
+    test_semantics_heat_transfer,
+    test_ticket0c_small_vessel,
+)
 
 ##
 # Register Gym environments.
@@ -44,6 +50,15 @@ gym.register(
     entry_point="matterix.envs:MatterixBaseEnv",
     kwargs={
         "env_cfg_entry_point": test_semantics_heat_transfer.FrankaBeakerHeaterSemanticsEnvTestCfg,
+    },
+    disable_env_checker=True,
+)
+
+gym.register(
+    id="Matterix-Ticket0c-Small-Vessel-Franka-v1",
+    entry_point="matterix.envs:MatterixBaseEnv",
+    kwargs={
+        "env_cfg_entry_point": test_ticket0c_small_vessel.Ticket0CSmallVesselEnvCfg,
     },
     disable_env_checker=True,
 )
