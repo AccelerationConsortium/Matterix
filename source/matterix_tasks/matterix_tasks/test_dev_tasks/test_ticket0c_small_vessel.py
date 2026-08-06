@@ -46,14 +46,6 @@ PROFILE_PATH = Path(__file__).with_name("ticket0c7_profiles.json")
 PROFILES = json.loads(PROFILE_PATH.read_text(encoding="utf-8"))
 TICKET0C7_VIEWER_EYE = (1.0, -1.1, 0.7)
 TICKET0C7_VIEWER_LOOKAT = (0.45, 0.0, 0.08)
-TICKET0C7_GLASS_MATERIAL = sim_utils.GlassMdlCfg(
-    glass_color=(0.78, 0.90, 1.0),
-    frosting_roughness=0.0,
-    thin_walled=True,
-    glass_ior=1.491,
-)
-
-
 def _configuration() -> tuple[str, str, str, str, dict]:
     asset_usd = os.environ.get("MATTERIX_TICKET0C_ASSET_USD", "")
     asset_id = os.environ.get("MATTERIX_TICKET0C_ASSET_ID", "")
@@ -199,11 +191,10 @@ class Ticket0CVesselCfg(MatterixRigidObjectCfg):
 
     def __post_init__(self):
         super().__post_init__()
-        # The supplied visual layer is geometry-only. Apply a render-only
-        # glass material at the visual asset root; collision remains the
-        # delivered invisible compound-convex layer.
-        self.spawn.visual_material_path = "Ticket0c7Glass"
-        self.spawn.visual_material = TICKET0C7_GLASS_MATERIAL
+        # The visual layer owns its per-prim material bindings. Keep the task
+        # material-neutral so glass cannot override caps, liners, or other
+        # visual descendants. Collision remains the delivered invisible
+        # compound-convex layer.
         # The supplied compound pieces are millimetre-scale. Keep contact
         # generation below the vessel wall scale and do not author a second
         # generic approximation over the delivered colliders.
