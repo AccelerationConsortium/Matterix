@@ -66,7 +66,6 @@ class MatterixBaseEnvCfg:
             carb_settings={
                 "rtx_translucency_enabled": True,
                 "rtx_raytracing_fractionalCutoutOpacity": True,
-                "rtx.material.translucencyAsOpacity": True,
             }
         )
     )
