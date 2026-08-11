@@ -53,6 +53,7 @@ class MoveRelative(MoveToPose):
         timeout: float = None,
         position_threshold: float = None,
         orientation_threshold: float = None,
+        settling_time: float = 0.05,
         action_space_info: ActionSpaceInfo | None = None,
     ):
         """
@@ -75,6 +76,7 @@ class MoveRelative(MoveToPose):
             timeout=timeout,
             position_threshold=position_threshold,
             orientation_threshold=orientation_threshold,
+            settling_time=settling_time,
             action_space_info=action_space_info,
         )
 
@@ -176,5 +178,6 @@ class MoveRelative(MoveToPose):
             timeout=cfg.timeout,
             position_threshold=cfg.position_threshold,
             orientation_threshold=cfg.orientation_threshold,
+            settling_time=cfg.settling_time,
             action_space_info=cfg.action_space_info,
         )

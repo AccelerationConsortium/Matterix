@@ -162,7 +162,6 @@ def main():
             sm.print_status(step=step_count, episode=episode_count)
             if args_cli.episodes > 0 and episode_count >= args_cli.episodes:
                 break
-
             if args_cli.record_video:
                 video_path = os.path.join(
                     args_cli.video_dir, f"{task_slug}_{workflow_slug}_ep{episode_count}_{run_ts}.mp4"

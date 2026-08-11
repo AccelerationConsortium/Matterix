@@ -18,6 +18,7 @@ from . import (
     test_franka_rigid_labware_flask_250,
     test_particle_systems,
     test_semantics_heat_transfer,
+    test_ticket0c_small_vessel,
 )
 
 ##
@@ -119,6 +120,15 @@ gym.register(
     entry_point="matterix.envs:MatterixBaseEnv",
     kwargs={
         "env_cfg_entry_point": test_franka_rigid_labware_falcon_50.FrankaRigidLabwareFalcon50EnvTestCfg,
+    },
+    disable_env_checker=True,
+)
+
+gym.register(
+    id="Matterix-Ticket0c-Small-Vessel-Franka-v1",
+    entry_point="matterix.envs:MatterixBaseEnv",
+    kwargs={
+        "env_cfg_entry_point": test_ticket0c_small_vessel.Ticket0CSmallVesselEnvCfg,
     },
     disable_env_checker=True,
 )
