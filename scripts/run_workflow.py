@@ -47,6 +47,8 @@ parser.add_argument(
     default="out/videos",
     help="Directory to save recorded videos (default: out/videos).",
 )
+parser.add_argument("--record_path", type=str, default=None, help="Optional unique HDF5 recorder path for this run.")
+parser.add_argument("--episodes", type=int, default=0, help="Stop after this many episodes; 0 keeps the existing continuous behavior.")
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
 
@@ -54,6 +56,7 @@ if args_cli.record_video and args_cli.headless and not args_cli.enable_cameras:
     parser.error("--record_video in headless mode requires --enable_cameras (the RTX renderer must be loaded for frame capture).")
 
 # Launch omniverse app
+# Forward the complete parsed launcher configuration so --livestream reaches WebRTC.
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
 
@@ -79,6 +82,8 @@ def main():
         num_envs=args_cli.num_envs,
         use_fabric=not args_cli.disable_fabric,
     )
+    if args_cli.record_path is not None:
+        env_cfg.record_path = args_cli.record_path
 
     # Validate workflow exists
     if not hasattr(env_cfg, "workflows") or not env_cfg.workflows:
@@ -155,6 +160,8 @@ def main():
                     sm.print_status(step=step_count, episode=episode_count)
 
             sm.print_status(step=step_count, episode=episode_count)
+            if args_cli.episodes > 0 and episode_count >= args_cli.episodes:
+                break
 
             if args_cli.record_video:
                 video_path = os.path.join(

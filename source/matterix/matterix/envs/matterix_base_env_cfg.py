@@ -64,7 +64,7 @@ class MatterixBaseEnvCfg:
 
     sim: SimulationCfg = SimulationCfg(
         render=RenderCfg(
-            carb_settings={"rtx_translucency_enabled": True, "rtx_raytracing_fractionalCutoutOpacity": True}
+            carb_settings={"rtx_translucency_enabled": True}
         )
     )
     """Physics simulation configuration. Default is SimulationCfg()."""
