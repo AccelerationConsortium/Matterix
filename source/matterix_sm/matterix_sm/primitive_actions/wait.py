@@ -6,7 +6,7 @@
 """Wait action that holds the current robot state for a specified duration."""
 
 import torch
-from dataclasses import MISSING
+from dataclasses import MISSING, field
 
 from .._compat import configclass
 from ..primitive_action import PrimitiveAction, PrimitiveActionCfg
@@ -36,7 +36,7 @@ class WaitCfg(PrimitiveActionCfg):
         ])
     """
 
-    agent_assets: str | list[str] = []  # Empty - no agents controlled
+    agent_assets: str | list[str] = field(default_factory=list)  # Empty - no agents controlled
     duration: float = MISSING  # Required: seconds to wait
     timeout: float = float("inf")  # Wait always runs to completion — no timeout
 

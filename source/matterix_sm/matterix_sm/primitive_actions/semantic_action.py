@@ -6,7 +6,7 @@
 """Pure semantic action that triggers semantic state changes instantly."""
 
 import torch
-from dataclasses import MISSING
+from dataclasses import MISSING, field
 
 from .._compat import configclass
 from ..primitive_action import PrimitiveAction, PrimitiveActionCfg
@@ -33,7 +33,7 @@ class SemanticActionCfg(PrimitiveActionCfg):
         )
     """
 
-    agent_assets: str | list[str] = []  # Empty - no agents controlled
+    agent_assets: str | list[str] = field(default_factory=list)  # Empty - no agents controlled
     semantics: list[SemanticInfo] = MISSING  # REQUIRED for SemanticAction
 
     def __post_init__(self):
