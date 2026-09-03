@@ -65,7 +65,14 @@ class MatterixBaseEnvCfg:
 
     sim: SimulationCfg = SimulationCfg(
         render=RenderCfg(
-            carb_settings={"rtx_translucency_enabled": True, "rtx_raytracing_fractionalCutoutOpacity": True}
+            # "rtx_raytracing_fractionalCutoutOpacity" removed -- isaaclab's
+            # _apply_render_settings_from_cfg() (simulation_context.py) validates every
+            # carb_settings key against currently-registered carb settings, and this one
+            # isn't registered under Isaac Sim 5.1 (renamed/restructured upstream since
+            # this was added in #23) -- was raising ValueError and blocking env creation
+            # entirely. Purely a raytraced-cutout-opacity rendering toggle, not
+            # physics-affecting.
+            carb_settings={"rtx_translucency_enabled": True}
         )
     )
     """Physics simulation configuration. Default is SimulationCfg()."""
