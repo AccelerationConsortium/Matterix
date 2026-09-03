@@ -230,7 +230,14 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             A tuple containing the observations, rewards, resets (terminated and truncated) and extras.
         """
         # process actions
-        self.action_manager.process_action(action.to(self.device))
+        # action can legitimately be None for a step whose StateMachine action list has no
+        # agent_assets at all (e.g. a pure SemanticActionCfg step like TurnOnHeaterCfg) --
+        # matterix_sm's "hold current pose" fallback in StateMachine.step() only inits for
+        # agents referenced *in that action sequence*, not the scene's full action space, so
+        # it stays None there. Mirror how semantic_actions=None already means "apply
+        # nothing" for the sibling parameter: skip processing rather than crash.
+        if action is not None:
+            self.action_manager.process_action(action.to(self.device))
 
         self.recorder_manager.record_pre_step()
 
