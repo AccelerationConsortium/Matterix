@@ -211,7 +211,7 @@ class PrimitiveAction(ActionBase):
         world_positions = world_positions.to(self.device)
         if world_orientations is None:
             world_orientations = torch.zeros((world_positions.shape[0], 4), device=self.device)
-            world_orientations[:, 0] = 1.0  # identity (w, x, y, z)
+            world_orientations[:, 3] = 1.0  # identity (x, y, z, w)
         else:
             world_orientations = world_orientations.to(self.device)
 

@@ -185,7 +185,10 @@ class IsInContactPhysics(IsInContact):
             )
         else:
             # Multi-body sensor: force_matrix_w is None, fall back to net force
-            net_norms = self._contact_sensor.data.net_forces_w.norm(dim=-1).amax(dim=1)
+            forces = self._contact_sensor.data.net_forces_w
+            if hasattr(forces, "torch"):
+                forces = forces.torch
+            net_norms = forces.norm(dim=-1).amax(dim=1)
             self.is_in_contact = net_norms > CONTACT_FORCE_THRESHOLD
             self.print_status(f"net force fallback: {net_norms.tolist()}")
 

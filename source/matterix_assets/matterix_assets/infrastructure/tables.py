@@ -57,6 +57,6 @@ class TABLE_SEATTLE_INST_Cfg(MatterixStaticObjectCfg):
     scale = (1.0, 1.0, 1.0)
     mass = 50.0  # Estimated mass in kg (for semantic simulations)
 
-    rot = (0.707, 0, 0, 0.707)  # 90 degrees around y-axis
+    rot = (0.0, 0.0, 0.707, 0.707)  # 90 deg about Z (x, y, z, w)
 
     semantic_tags = [("class", "table")]

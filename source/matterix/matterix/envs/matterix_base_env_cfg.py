@@ -12,6 +12,7 @@ configuring the environment instances, viewer settings, and simulation parameter
 from dataclasses import MISSING
 from typing import Literal
 
+from isaaclab_physx.physics import PhysxCfg
 from matterix.envs import mdp
 from matterix.managers import (
     ActionManagerCfg,
@@ -42,7 +43,7 @@ class LightStateCfg:
     """Configuration of the environment lights."""
 
     pos: tuple[float, float, float] = (0.0, 0.0, 0.0)
-    rot: tuple[float, float, float, float] = (1.0, 0.0, 0.0, 0.0)
+    rot: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 1.0)  # (x, y, z, w)
     light: LightCfg = MISSING
 
 
@@ -115,6 +116,9 @@ class MatterixBaseEnvCfg:
     Please refer to the :class:`isaaclab.managers.RecorderManager` class for more details.
     """
     record_path: str = None
+    # Matterix owns recording through RealTimeVideoRecorder. Disable Isaac Lab's
+    # separate recorder while retaining the config field required by its base env.
+    video_recorder: object | None = None
 
     observations: object = ObservationManagerCfg()
     """Observation space settings.
@@ -207,8 +211,13 @@ class MatterixBaseEnvCfg:
 
     """
 
+    num_rerenders_on_reset: int = 0
+
     wait_for_textures: bool = True
     """True to wait for assets to be loaded completely, False otherwise. Defaults to True."""
+
+    export_io_descriptors: bool = False
+    log_dir: str | None = None
 
     articulated_assets: dict[str, MatterixArticulationCfg] = {}
 
@@ -325,9 +334,9 @@ class MatterixBaseEnvCfg:
             self.enable_particles = True
 
         if self.enable_particles:
-            from omni.physx import acquire_physx_interface
+            import omni.physx
 
-            physx_interface = acquire_physx_interface()
+            physx_interface = omni.physx.get_physx_interface()
             physx_interface.overwrite_gpu_setting(1)
 
             self.replicate_physics = True
@@ -342,7 +351,9 @@ class MatterixBaseEnvCfg:
         self.sim.render_interval = self.decimation
 
         # physX settings
-        self.sim.physx.bounce_threshold_velocity = self.bounce_threshold_velocity
-        self.sim.physx.gpu_found_lost_aggregate_pairs_capacity = self.gpu_found_lost_aggregate_pairs_capacity
-        self.sim.physx.gpu_total_aggregate_pairs_capacity = self.gpu_total_aggregate_pairs_capacity
-        self.sim.physx.friction_correlation_distance = self.friction_correlation_distance
+        if self.sim.physics is None:
+            self.sim.physics = PhysxCfg()
+        self.sim.physics.bounce_threshold_velocity = self.bounce_threshold_velocity
+        self.sim.physics.gpu_found_lost_aggregate_pairs_capacity = self.gpu_found_lost_aggregate_pairs_capacity
+        self.sim.physics.gpu_total_aggregate_pairs_capacity = self.gpu_total_aggregate_pairs_capacity
+        self.sim.physics.friction_correlation_distance = self.friction_correlation_distance

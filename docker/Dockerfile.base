@@ -26,6 +26,8 @@ ENV ISAACSIM_ROOT_PATH=${ISAACSIM_ROOT_PATH_ARG}
 # Path to the Isaac Lab directory
 ARG MATTERIX_PATH_ARG
 ENV MATTERIX_PATH=${MATTERIX_PATH_ARG}
+# matterix.sh resolves the bundled Isaac Sim link relative to ISAACLAB_PATH.
+ENV ISAACLAB_PATH=${MATTERIX_PATH}
 # Home dir of docker user, typically '/root'
 ARG DOCKER_USER_HOME_ARG
 ENV DOCKER_USER_HOME=${DOCKER_USER_HOME_ARG}

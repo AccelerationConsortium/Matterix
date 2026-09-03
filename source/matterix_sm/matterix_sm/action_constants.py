@@ -17,6 +17,6 @@ TIMEOUT_DEFAULT = 10.0
 10 seconds is reasonable for most manipulation actions."""
 
 
-# Standard end-effector orientation (quaternion w, x, y, z)
+# Standard end-effector orientation (quaternion x, y, z, w) — Isaac Lab 3.0
 # This represents a 90° pitch rotation (gripper pointing downward)
-FRANKA_ORIENTATION_DOWN_QUAT = (0.0, 0.7071, 0.7071, 0.0)
+FRANKA_ORIENTATION_DOWN_QUAT = (0.7071, 0.7071, 0.0, 0.0)

@@ -26,28 +26,37 @@ if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedEnv, ManagerBasedRLEnv
 
 
+def _as_torch(value):
+    """Return a torch tensor from Isaac Lab 3.x ProxyArray or pass through tensors.
+
+    Observation terms keep returning torch.Tensor so Matterix SM / managers
+    call sites stay unchanged.
+    """
+    return value.torch if hasattr(value, "torch") else value
+
+
 def force_data(env: ManagerBasedRLEnv, asset_name: str):
     sensor_name = f"contact_sensor_{asset_name}"
-    return env.scene[sensor_name].data.net_forces_w
+    return _as_torch(env.scene[sensor_name].data.net_forces_w)
 
 
 def ee_world_pos(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
     ee_frame_name = f"ee_frame_{asset_name}"
     ee_frame: FrameTransformer = env.scene[ee_frame_name]
-    return ee_frame.data.target_pos_w[..., 0, :]
+    return _as_torch(ee_frame.data.target_pos_w)[..., 0, :]
 
 
 def ee_env_pos(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
     ee_frame_name = f"ee_frame_{asset_name}"
     ee_frame: FrameTransformer = env.scene[ee_frame_name]
-    ee_frame_pos = ee_frame.data.target_pos_w[:, 0, :] - env.scene.env_origins[:, 0:3]
+    ee_frame_pos = _as_torch(ee_frame.data.target_pos_w)[:, 0, :] - env.scene.env_origins[:, 0:3]
     return ee_frame_pos
 
 
 def ee_euler_xyz(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
     ee_frame_name = f"ee_frame_{asset_name}"
     ee_frame: FrameTransformer = env.scene[ee_frame_name]
-    ee_quat = ee_frame.data.target_quat_w[..., 0, :]
+    ee_quat = _as_torch(ee_frame.data.target_quat_w)[..., 0, :]
     roll, pitch, yaw = euler_xyz_from_quat(ee_quat)
     return torch.stack([roll, pitch, yaw], dim=-1)
 
@@ -55,39 +64,39 @@ def ee_euler_xyz(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
 def object_euler_xyz(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
     obj_name = f"{asset_name}"
     obj = env.scene[obj_name]
-    roll, pitch, yaw = euler_xyz_from_quat(obj.data.root_quat_w)
+    roll, pitch, yaw = euler_xyz_from_quat(_as_torch(obj.data.root_quat_w))
     return torch.stack([roll, pitch, yaw], dim=-1)
 
 
 def root_world_pos(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
     """Root position in world frame."""
     asset = env.scene[asset_name]
-    return asset.data.root_pos_w
+    return _as_torch(asset.data.root_pos_w)
 
 
 def root_world_quat(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
     """Root orientation (quaternion) in world frame."""
     asset = env.scene[asset_name]
-    return asset.data.root_quat_w
+    return _as_torch(asset.data.root_quat_w)
 
 
 def joint_pos(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
     """Joint positions."""
     asset = env.scene[asset_name]
-    return asset.data.joint_pos
+    return _as_torch(asset.data.joint_pos)
 
 
 def joint_vel(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
     """Joint velocities."""
     asset = env.scene[asset_name]
-    return asset.data.joint_vel
+    return _as_torch(asset.data.joint_vel)
 
 
 def ee_world_quat(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
     """End-effector orientation (quaternion) in world frame."""
     ee_frame_name = f"ee_frame_{asset_name}"
     ee_frame: FrameTransformer = env.scene[ee_frame_name]
-    return ee_frame.data.target_quat_w[..., 0, :]
+    return _as_torch(ee_frame.data.target_quat_w)[..., 0, :]
 
 
 def gripper_pos(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
@@ -114,8 +123,9 @@ def gripper_pos(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
         if hasattr(env.cfg, "gripper_joint_names"):
             gripper_joint_ids, _ = asset.find_joints(env.cfg.gripper_joint_names)
             assert len(gripper_joint_ids) == 2, "Observation gripper_pos only supports parallel gripper for now"
-            finger_joint_1 = asset.data.joint_pos[:, gripper_joint_ids[0]].clone().unsqueeze(1)
-            finger_joint_2 = -1 * asset.data.joint_pos[:, gripper_joint_ids[1]].clone().unsqueeze(1)
+            joint_pos = _as_torch(asset.data.joint_pos)
+            finger_joint_1 = joint_pos[:, gripper_joint_ids[0]].clone().unsqueeze(1)
+            finger_joint_2 = -1 * joint_pos[:, gripper_joint_ids[1]].clone().unsqueeze(1)
             return torch.cat((finger_joint_1, finger_joint_2), dim=1)
         else:
             raise NotImplementedError("[Error] Cannot find gripper_joint_names in the environment config")
@@ -129,25 +139,25 @@ def gripper_pos(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
 def object_world_pos(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
     """Object position in world frame."""
     obj = env.scene[asset_name]
-    return obj.data.root_pos_w
+    return _as_torch(obj.data.root_pos_w)
 
 
 def object_world_quat(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
     """Object orientation (quaternion) in world frame."""
     obj = env.scene[asset_name]
-    return obj.data.root_quat_w
+    return _as_torch(obj.data.root_quat_w)
 
 
 def object_lin_vel(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
     """Object linear velocity in world frame."""
     obj = env.scene[asset_name]
-    return obj.data.root_lin_vel_w
+    return _as_torch(obj.data.root_lin_vel_w)
 
 
 def object_ang_vel(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
     """Object angular velocity in world frame."""
     obj = env.scene[asset_name]
-    return obj.data.root_ang_vel_w
+    return _as_torch(obj.data.root_ang_vel_w)
 
 
 def frame_world_pos(env: ManagerBasedEnv, asset_name: str, frame_name: str) -> torch.Tensor:
@@ -166,7 +176,7 @@ def frame_world_pos(env: ManagerBasedEnv, asset_name: str, frame_name: str) -> t
     """
     frame_key = f"{frame_name}_{asset_name}"
     frame_transformer: FrameTransformer = env.scene[frame_key]
-    return frame_transformer.data.target_pos_w[..., 0, :]
+    return _as_torch(frame_transformer.data.target_pos_w)[..., 0, :]
 
 
 def frame_world_quat(env: ManagerBasedEnv, asset_name: str, frame_name: str) -> torch.Tensor:
@@ -178,14 +188,14 @@ def frame_world_quat(env: ManagerBasedEnv, asset_name: str, frame_name: str) -> 
         frame_name: Name of the frame (e.g., "grasp", "pre_grasp", "post_grasp").
 
     Returns:
-        Quaternion tensor of shape (num_envs, 4) in world frame as (w, x, y, z).
+        Quaternion tensor of shape (num_envs, 4) in world frame as (x, y, z, w).
 
     Note:
         Frame transformers in Isaac Lab are stored with pattern: {frame_name}_{asset_name}
     """
     frame_key = f"{frame_name}_{asset_name}"
     frame_transformer: FrameTransformer = env.scene[frame_key]
-    return frame_transformer.data.target_quat_w[..., 0, :]
+    return _as_torch(frame_transformer.data.target_quat_w)[..., 0, :]
 
 
 def frame_world_pose(env: ManagerBasedEnv, asset_name: str, frame_name: str) -> torch.Tensor:
@@ -197,15 +207,15 @@ def frame_world_pose(env: ManagerBasedEnv, asset_name: str, frame_name: str) -> 
         frame_name: Name of the frame (e.g., "grasp", "pre_grasp", "post_grasp").
 
     Returns:
-        Pose tensor of shape (num_envs, 7) as [x, y, z, qw, qx, qy, qz] in world frame.
+        Pose tensor of shape (num_envs, 7) as [x, y, z, qx, qy, qz, qw] in world frame.
 
     Note:
         Frame transformers in Isaac Lab are stored with pattern: {frame_name}_{asset_name}
     """
     frame_key = f"{frame_name}_{asset_name}"
     frame_transformer: FrameTransformer = env.scene[frame_key]
-    pos = frame_transformer.data.target_pos_w[..., 0, :]  # (num_envs, 3)
-    quat = frame_transformer.data.target_quat_w[..., 0, :]  # (num_envs, 4)
+    pos = _as_torch(frame_transformer.data.target_pos_w)[..., 0, :]  # (num_envs, 3)
+    quat = _as_torch(frame_transformer.data.target_quat_w)[..., 0, :]  # (num_envs, 4)
     return torch.cat([pos, quat], dim=-1)  # (num_envs, 7)
 
 
@@ -213,7 +223,7 @@ def object_frames(env: ManagerBasedEnv, asset_name: str) -> dict:
     """Extract frame transformations for an object.
 
     Returns a dictionary of frame names to their world poses (pos + quat).
-    Example: {"grasp": tensor([x, y, z, qw, qx, qy, qz]), ...}
+    Example: {"grasp": tensor([x, y, z, qx, qy, qz, qw]), ...}
     """
     # Get the asset config to find which frames are defined
     asset = env.scene[asset_name]
@@ -230,8 +240,8 @@ def object_frames(env: ManagerBasedEnv, asset_name: str) -> dict:
             try:
                 frame_transformer: FrameTransformer = env.scene[frame_key]
                 # Get position and quaternion in world frame
-                pos = frame_transformer.data.target_pos_w[:, 0, :]  # (num_envs, 3)
-                quat = frame_transformer.data.target_quat_w[:, 0, :]  # (num_envs, 4)
+                pos = _as_torch(frame_transformer.data.target_pos_w)[:, 0, :]  # (num_envs, 3)
+                quat = _as_torch(frame_transformer.data.target_quat_w)[:, 0, :]  # (num_envs, 4)
                 # Concatenate into 7D tensor
                 frames_dict[frame_name] = torch.cat([pos, quat], dim=-1)  # (num_envs, 7)
             except KeyError:
@@ -253,7 +263,7 @@ def object_all_frames(env: ManagerBasedEnv, asset_name: str) -> dict[str, torch.
 
     Returns:
         Dictionary mapping frame names to 7D pose tensors (num_envs, 7).
-        Example: {"pre_grasp": tensor([x, y, z, qw, qx, qy, qz]), ...}
+        Example: {"pre_grasp": tensor([x, y, z, qx, qy, qz, qw]), ...}
     """
     asset = env.scene[asset_name]
 
@@ -271,9 +281,9 @@ def object_all_frames(env: ManagerBasedEnv, asset_name: str) -> dict[str, torch.
         try:
             frame_transformer: FrameTransformer = env.scene[frame_key]
             # Get position and quaternion in world frame
-            pos = frame_transformer.data.target_pos_w[:, 0, :]  # (num_envs, 3)
-            quat = frame_transformer.data.target_quat_w[:, 0, :]  # (num_envs, 4)
-            # Concatenate into 7D tensor [x, y, z, qw, qx, qy, qz]
+            pos = _as_torch(frame_transformer.data.target_pos_w)[:, 0, :]  # (num_envs, 3)
+            quat = _as_torch(frame_transformer.data.target_quat_w)[:, 0, :]  # (num_envs, 4)
+            # Concatenate into 7D tensor [x, y, z, qx, qy, qz, qw]
             frames_dict[frame_name] = torch.cat([pos, quat], dim=-1)  # (num_envs, 7)
         except KeyError:
             # Frame transformer not found in scene, skip it

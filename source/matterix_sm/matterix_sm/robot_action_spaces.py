@@ -35,7 +35,7 @@ class ActionSpaceInfo:
                            This is the robot-specific offset that accounts for gripper geometry.
                            Format: tuple of (position_offset, quaternion_offset) where:
                              - position_offset: (3,) tuple (x, y, z) in meters
-                             - quaternion_offset: (4,) tuple (w, x, y, z)
+                             - quaternion_offset: (4,) tuple (x, y, z, w)
 
     Example:
         >>> # Standard Franka IK action space: [pos(3), quat(4), gripper(1)]
@@ -44,7 +44,7 @@ class ActionSpaceInfo:
         ...     position_indices=(0, 1, 2),
         ...     orientation_indices=(3, 4, 5, 6),
         ...     gripper_indices=(7,),
-        ...     grasp_to_ee_offset=((0.0, 0.0, 0.0), (1.0, 0.0, 0.0, 0.0)),  # 10.34cm offset
+        ...     grasp_to_ee_offset=((0.0, 0.0, 0.0), (0.0, 0.0, 0.0, 1.0)),  # identity offset
         ... )
     """
 
@@ -66,8 +66,8 @@ FRANKA_IK_ACTION_SPACE = ActionSpaceInfo(
     orientation_indices=(3, 4, 5, 6),
     gripper_indices=(7,),
     grasp_to_ee_offset=(
-        (0.0, 0.0, 0.0),  # 10.34cm offset along z-axis (typical for Franka gripper)
-        (0.0, -1.0, 0.0, 0.0),  # Identity rotation (no rotation offset)
+        (0.0, 0.0, 0.0),  # position offset (m); gripper geometry handled by EE frame
+        (-1.0, 0.0, 0.0, 0.0),  # 180 deg about X (x, y, z, w)
     ),
 )
 """Standard Franka Panda with IK control (8-dim: pos + ori + gripper).

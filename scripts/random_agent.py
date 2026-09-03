@@ -31,7 +31,9 @@ AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
 
 if args_cli.record_video and args_cli.headless and not args_cli.enable_cameras:
-    parser.error("--record_video in headless mode requires --enable_cameras (the RTX renderer must be loaded for frame capture).")
+    parser.error(
+        "--record_video in headless mode requires --enable_cameras (the RTX renderer must be loaded for frame capture)."
+    )
 
 # launch omniverse app
 app_launcher = AppLauncher(args_cli)
@@ -40,9 +42,8 @@ simulation_app = app_launcher.app
 """Rest everything follows."""
 
 import datetime
-import os
-
 import gymnasium as gym
+import os
 import torch
 
 import matterix_tasks  # noqa: F401
@@ -87,9 +88,7 @@ def main():
             print("[random agent] observations:", observations)
 
             if args_cli.record_video and bool((terminated | truncated).any()):
-                video_path = os.path.join(
-                    args_cli.video_dir, f"{task_slug}_ep{episode_count}_{run_ts}.mp4"
-                )
+                video_path = os.path.join(args_cli.video_dir, f"{task_slug}_ep{episode_count}_{run_ts}.mp4")
                 env.unwrapped.save_video(video_path)
                 print(f"[INFO]: Video saved to {video_path}")
                 episode_count += 1

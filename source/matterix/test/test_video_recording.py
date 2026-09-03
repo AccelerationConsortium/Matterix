@@ -41,35 +41,52 @@ DEFAULT_LOOKAT = (0.3, 0.0, 0.3)
 def _parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--task", type=str, default=DEFAULT_TASK,
+        "--task",
+        type=str,
+        default=DEFAULT_TASK,
         help="Matterix task ID to render.",
     )
     parser.add_argument(
-        "--workflow", type=str, default=DEFAULT_WORKFLOW,
+        "--workflow",
+        type=str,
+        default=DEFAULT_WORKFLOW,
         help="Workflow name to run (from env_cfg.workflows).",
     )
     parser.add_argument(
-        "--mode", type=str, default=None, choices=MODES,
+        "--mode",
+        type=str,
+        default=None,
+        choices=MODES,
         help="Single render preset to run.",
     )
     parser.add_argument(
-        "--all_modes", action="store_true",
+        "--all_modes",
+        action="store_true",
         help="Run all four render presets (subprocess each).",
     )
     parser.add_argument(
-        "--out_dir", type=str, default=None,
+        "--out_dir",
+        type=str,
+        default=None,
         help="Where mp4 files are written. Defaults to <MATTERIX_PATH>/out/render_modes.",
     )
     parser.add_argument(
-        "--max_steps", type=int, default=300,
+        "--max_steps",
+        type=int,
+        default=300,
         help="Max env steps (workflow may finish earlier).",
     )
     parser.add_argument(
-        "--resolution", nargs=2, type=int, default=[1280, 720], metavar=("W", "H"),
+        "--resolution",
+        nargs=2,
+        type=int,
+        default=[1280, 720],
+        metavar=("W", "H"),
         help="Viewport resolution.",
     )
 
     from isaaclab.app import AppLauncher
+
     AppLauncher.add_app_launcher_args(parser)
 
     return parser.parse_args()
@@ -104,8 +121,9 @@ def _run_all_modes(args) -> int:
     return worst
 
 
-def run_single_mode(task: str, workflow: str, mode: str, resolution: tuple[int, int],
-                    max_steps: int, out_dir: str, args) -> str:
+def run_single_mode(
+    task: str, workflow: str, mode: str, resolution: tuple[int, int], max_steps: int, out_dir: str, args
+) -> str:
     """Launch sim, run workflow with video recording, save mp4."""
     from isaaclab.app import AppLauncher
 
@@ -116,9 +134,10 @@ def run_single_mode(task: str, workflow: str, mode: str, resolution: tuple[int, 
     import torch
 
     import matterix_tasks  # noqa: F401
+    from matterix_sm import StateMachine
+
     import isaaclab_tasks  # noqa: F401
     from isaaclab_tasks.utils import parse_env_cfg
-    from matterix_sm import StateMachine
 
     env_cfg = parse_env_cfg(task, device=args.device, num_envs=1)
     env_cfg.prepare_for_video_rec(
@@ -132,9 +151,11 @@ def run_single_mode(task: str, workflow: str, mode: str, resolution: tuple[int, 
 
     os.makedirs(out_dir, exist_ok=True)
     out_path = os.path.join(out_dir, f"{mode}.mp4")
-    print(f"[capture] task={task} workflow={workflow} mode={mode} "
-          f"resolution={resolution} max_steps={max_steps} -> {out_path}",
-          flush=True)
+    print(
+        f"[capture] task={task} workflow={workflow} mode={mode} "
+        f"resolution={resolution} max_steps={max_steps} -> {out_path}",
+        flush=True,
+    )
 
     workflow_cfg = env_cfg.workflows[workflow]
     actions_seq = workflow_cfg if isinstance(workflow_cfg, list) else getattr(workflow_cfg, "actions", [workflow_cfg])
@@ -169,9 +190,11 @@ def run_single_mode(task: str, workflow: str, mode: str, resolution: tuple[int, 
 
     file_size_mb = os.path.getsize(out_path) / (1024 * 1024)
     print(f"[capture] wrote {out_path} ({file_size_mb:.1f} MB)", flush=True)
-    print(f"[timing] mode={mode} resolution={resolution} steps={step_count} "
-          f"sim={t_sim:.1f}s encode={t_save:.1f}s total={t_sim + t_save:.1f}s",
-          flush=True)
+    print(
+        f"[timing] mode={mode} resolution={resolution} steps={step_count} "
+        f"sim={t_sim:.1f}s encode={t_save:.1f}s total={t_sim + t_save:.1f}s",
+        flush=True,
+    )
 
     simulation_app  # silence linter
     os._exit(0)

@@ -29,14 +29,14 @@ The key features of Matterix are:
 To install IsaacSim and IsaacLab using conda:
 ```
 # create and activate conda env
-conda create -n <isaaclab-conda-env-name> python=3.11
+conda create -n <isaaclab-conda-env-name> python=3.12
 conda activate <isaaclab-conda-env-name>
 pip install --upgrade pip
 
 # Install a CUDA-enabled PyTorch
-pip install -U torch==2.7.0 torchvision==0.22.0 --index-url https://download.pytorch.org/whl/cu128
+pip install -U torch==2.10.0 torchvision==0.25.0 --index-url https://download.pytorch.org/whl/cu128
 # Install the Isaac Lab packages along with Isaac Sim:
-pip install "isaaclab[isaacsim,all]==2.3.0" --extra-index-url https://pypi.nvidia.com
+pip install "isaaclab[isaacsim,all]==3.0.0b2.post1" --extra-index-url https://pypi.nvidia.com
 ```
 For advanced installation options, refer to [installation guide](https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/index.html).
 

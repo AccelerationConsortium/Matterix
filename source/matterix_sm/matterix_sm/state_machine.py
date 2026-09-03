@@ -914,7 +914,7 @@ class StateMachine:
                         frame_name = key.replace("_frame", "")
                         frame_data = data[key]
                         if isinstance(frame_data, torch.Tensor) and frame_data.shape[-1] == 7:
-                            # Parse 7D tensor: [x, y, z, qw, qx, qy, qz]
+                            # Parse 7D tensor: [x, y, z, qx, qy, qz, qw]
                             frames_dict[frame_name] = Pose(
                                 position=frame_data[..., :3],
                                 orientation=frame_data[..., 3:7],

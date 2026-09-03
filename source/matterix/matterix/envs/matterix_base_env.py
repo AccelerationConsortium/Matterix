@@ -14,7 +14,6 @@ import torch
 from collections.abc import Sequence
 from typing import Any, ClassVar
 
-from isaacsim.core.simulation_manager import SimulationManager
 from isaacsim.core.version import get_version
 from matterix.managers.semantics import SemanticManager
 from matterix.particle_systems import Particles
@@ -102,12 +101,10 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         # -- counter for curriculum
         self.common_step_counter = 0
 
-        # check if particle system is enabled, change the device
-        # currently the way the device arguments is handled in script arguments (e.g., zero_agent.py) is:
-        # it can only be set by the user, otherwise it is set to `cuda:0` by default and overwrites the cfg.sim.device variable
-        # this should be fixed later in isaaclab to make changing the device easier in post initialization of cfg
+        # Matterix's custom PhysX particle systems use the CPU tensor pipeline.
+        # The environment config disables Fabric separately for particle scenes.
         if cfg.enable_particles:
-            cfg.sim.device = "cpu"  # change the device to CPU for particle systems
+            cfg.sim.device = "cpu"
 
         # check that the config is valid
         self.cfg = cfg
@@ -239,7 +236,7 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
 
         # check if we need to do rendering within the physics loop
         # note: checked here once to avoid multiple checks within the loop
-        is_rendering = self.sim.has_gui() or self.sim.has_rtx_sensors() or self._video_recorder.is_recording
+        is_rendering = self.sim.is_rendering or self._video_recorder.is_recording
 
         # perform physics stepping
         for _ in range(self.cfg.decimation):
@@ -290,7 +287,7 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             self.sim.forward()
 
             # if sensors are added to the scene, make sure we render to reflect changes in reset
-            if self.sim.has_rtx_sensors() and self.cfg.rerender_on_reset:
+            if self.has_rtx_sensors and self.cfg.rerender_on_reset:
                 self.sim.render()
 
             # trigger recorder terms for post-reset calls
@@ -354,19 +351,18 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         """
         # run a rendering step of the simulator
         # if we have rtx sensors, we do not need to render again sin
-        if not self.sim.has_rtx_sensors() and not recompute:
+        if not self.has_rtx_sensors and not recompute:
             self.sim.render()
         # decide the rendering mode
         if self.render_mode == "human" or self.render_mode is None:
             return None
         elif self.render_mode == "rgb_array":
             # check that if any render could have happened
-            if self.sim.render_mode.value < self.sim.RenderMode.PARTIAL_RENDERING.value:
+            if not self.sim.can_render_rgb_array():
                 raise RuntimeError(
-                    f"Cannot render '{self.render_mode}' when the simulation render mode is"
-                    f" '{self.sim.render_mode.name}'. Please set the simulation render mode to:"
-                    f"'{self.sim.RenderMode.PARTIAL_RENDERING.name}' or '{self.sim.RenderMode.FULL_RENDERING.name}'."
-                    " If running headless, make sure --enable_cameras is set."
+                    f"Cannot render '{self.render_mode}' because the simulation context does not support RGB-array"
+                    " rendering. Enable a GUI, offscreen rendering, or an active visualizer. If running headless,"
+                    " make sure --enable_cameras is set."
                 )
             # create the annotator if it does not exist
             if not hasattr(self, "_rgb_annotator"):
@@ -539,7 +535,7 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         self.scene.write_data_to_sim()
         self.sim.forward()
         # if sensors are added to the scene, make sure we render to reflect changes in reset
-        if self.sim.has_rtx_sensors() and self.cfg.rerender_on_reset:
+        if self.has_rtx_sensors and self.cfg.rerender_on_reset:
             self.sim.render()
         # trigger recorder terms for post-reset calls
         self.recorder_manager.record_post_reset(env_ids)
@@ -547,8 +543,8 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         # compute observations
         self.obs_buf = self.observation_manager.compute()
 
-        if self.cfg.wait_for_textures and self.sim.has_rtx_sensors():
-            while SimulationManager.assets_loading():
+        if self.cfg.wait_for_textures and self.has_rtx_sensors:
+            while self.sim.physics_manager.assets_loading():
                 self.sim.render()
 
         # return observations
@@ -690,8 +686,10 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
 
     def setup_recorder(self):
         """Setup the recorder manager."""
-        if self.cfg.record_path is not None:
+        if self.cfg.recorders is None:
+            return
 
+        if self.cfg.record_path is not None:
             output_dir = os.path.dirname(self.cfg.record_path)
             output_file_name = os.path.splitext(os.path.basename(self.cfg.record_path))[0]
 

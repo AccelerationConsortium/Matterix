@@ -21,12 +21,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Verify Docker install
-        run: docker --version
+        run: |
+          docker --version
+          docker info
 
       - name: Start Docker container
-        run: |
-          sudo systemctl status docker
-          python3 docker/container.py start
+        run: python3 docker/container.py start
 
       - name: Run command inside the container
         run: |

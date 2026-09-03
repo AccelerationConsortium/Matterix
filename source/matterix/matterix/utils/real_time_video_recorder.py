@@ -12,11 +12,10 @@ here; all validation, fps derivation, and moviepy I/O live in this class.
 
 from __future__ import annotations
 
+import numpy as np
 import os
 import warnings
 from typing import TYPE_CHECKING
-
-import numpy as np
 
 if TYPE_CHECKING:
     from matterix.envs.matterix_base_env import MatterixBaseEnv
@@ -30,7 +29,7 @@ class RealTimeVideoRecorder:
     them to an mp4 and returns to idle.
     """
 
-    def __init__(self, env: "MatterixBaseEnv") -> None:
+    def __init__(self, env: MatterixBaseEnv) -> None:
         self.env = env
         self.frames: list[np.ndarray] | None = None
 
@@ -42,10 +41,10 @@ class RealTimeVideoRecorder:
         """Open the buffer. Raises if render_mode is wrong, warns on double-start."""
         if self.env.render_mode != "rgb_array":
             raise RuntimeError(
-                f"Cannot start video recording: env.render_mode is "
+                "Cannot start video recording: env.render_mode is "
                 f"{self.env.render_mode!r}, but recording requires 'rgb_array'. "
-                f"render_mode is fixed at construction, so set it at the gym.make call:\n"
-                f"    env = gym.make(task, cfg=cfg, render_mode='rgb_array')"
+                "render_mode is fixed at construction, so set it at the gym.make call:\n"
+                "    env = gym.make(task, cfg=cfg, render_mode='rgb_array')"
             )
         if self.frames is not None:
             warnings.warn(

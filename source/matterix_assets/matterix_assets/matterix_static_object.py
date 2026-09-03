@@ -30,8 +30,8 @@ class MatterixStaticObjectCfg(AssetBaseCfg):
     """Configuration parameters for a rigid object."""
 
     pos: tuple[float, float, float] | None = None  # default value is (0.0, 0.0, 0.0)
-    # Quaternion rotation (w, x, y, z)
-    rot: tuple[float, float, float, float] | None = None  # default value is (1.0, 0.0, 0.0, 0.0)
+    # Quaternion rotation (x, y, z, w) — Isaac Lab 3.0
+    rot: tuple[float, float, float, float] | None = None  # default value is (0.0, 0.0, 0.0, 1.0)
 
     # defined by the user for each rigid object
     prim_path = "{ENV_REGEX_NS}/StaticObjects"

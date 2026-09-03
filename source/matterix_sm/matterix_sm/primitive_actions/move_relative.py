@@ -25,7 +25,7 @@ class MoveRelativeCfg(MoveToPoseCfg):
 
     Attributes:
         position_offset: 3D position offset in world frame (x, y, z). Default: no offset.
-        orientation_offset: Quaternion offset (w, x, y, z) applied relative to current orientation.
+        orientation_offset: Quaternion offset (x, y, z, w) applied relative to current orientation.
                            Default: identity (no rotation).
         timeout: Defaults to 5.0 seconds.
     """
@@ -60,8 +60,8 @@ class MoveRelative(MoveToPose):
             agent_assets: Name(s) of articulated asset(s) acting as agents.
             position_offset: (3,) position offset in world frame (x, y, z).
                             If None, defaults to (0, 0, 0) - no position change.
-            orientation_offset: (4,) quaternion offset (w, x, y, z) applied relative to current orientation.
-                               If None, defaults to (1, 0, 0, 0) - identity quaternion (no rotation change).
+            orientation_offset: (4,) quaternion offset (x, y, z, w) applied relative to current orientation.
+                               If None, defaults to (0, 0, 0, 1) - identity quaternion (no rotation change).
             timeout: Max time (in seconds) before timeout.
             position_threshold: Distance threshold for success (meters).
             orientation_threshold: Orientation threshold for success (radians).
@@ -83,9 +83,9 @@ class MoveRelative(MoveToPose):
         if position_offset is None:
             position_offset = (0.0, 0.0, 0.0)
 
-        # Default orientation offset: (1, 0, 0, 0) - identity quaternion (no rotation)
+        # Default orientation offset: (0, 0, 0, 1) - identity quaternion (no rotation)
         if orientation_offset is None:
-            orientation_offset = (1.0, 0.0, 0.0, 0.0)
+            orientation_offset = (0.0, 0.0, 0.0, 1.0)
 
         # Store offsets as tuples (will be converted to tensors in set_execution_params)
         self._position_offset_tuple = position_offset

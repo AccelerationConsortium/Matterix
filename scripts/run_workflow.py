@@ -51,7 +51,9 @@ AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
 
 if args_cli.record_video and args_cli.headless and not args_cli.enable_cameras:
-    parser.error("--record_video in headless mode requires --enable_cameras (the RTX renderer must be loaded for frame capture).")
+    parser.error(
+        "--record_video in headless mode requires --enable_cameras (the RTX renderer must be loaded for frame capture)."
+    )
 
 # Launch omniverse app
 app_launcher = AppLauncher(args_cli)
@@ -60,9 +62,8 @@ simulation_app = app_launcher.app
 """Rest everything else."""
 
 import datetime
-import os
-
 import gymnasium as gym
+import os
 import torch
 
 import matterix_tasks  # noqa: F401
@@ -79,6 +80,11 @@ def main():
         num_envs=args_cli.num_envs,
         use_fabric=not args_cli.disable_fabric,
     )
+
+    # MP4 capture is owned by Matterix's RealTimeVideoRecorder. Do not also
+    # initialize Isaac Lab's unrelated HDF5 dataset recorder for video-only runs.
+    if args_cli.record_video:
+        env_cfg.recorders = None
 
     # Validate workflow exists
     if not hasattr(env_cfg, "workflows") or not env_cfg.workflows:

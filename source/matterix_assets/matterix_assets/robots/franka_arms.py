@@ -16,6 +16,7 @@ The following configurations are available:
 
 Reference: https://github.com/frankaemika/franka_ros
 """
+
 from matterix_assets import MATTERIX_ASSETS_DATA_DIR
 
 import isaaclab.sim as sim_utils
@@ -160,7 +161,7 @@ This configuration is useful for task-space control using differential IK.
 @configclass
 class FRANKA_PANDA_CFG(MatterixArticulationCfg):
     spawn = sim_utils.UsdFileCfg(
-        usd_path=f"{ISAACLAB_NUCLEUS_DIR}/Robots/FrankaEmika/panda_instanceable.usd",
+        usd_path=f"{ISAACLAB_NUCLEUS_DIR}/Robots/FrankaEmika/Legacy/panda_instanceable.usd",
         activate_contact_sensors=False,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
@@ -278,7 +279,7 @@ class FRANKA_PANDA_CFG(MatterixArticulationCfg):
                 FrameTransformerCfg.FrameCfg(
                     prim_path="/panda_hand",
                     name="grasping_frame",
-                    offset=OffsetCfg(pos=(0.0, 0.0, 0.1034), rot=(0.0, 1.0, 0.0, 0.0)),
+                    offset=OffsetCfg(pos=(0.0, 0.0, 0.1034), rot=(1.0, 0.0, 0.0, 0.0)),  # (x,y,z,w),
                 ),
             ],
         ),
