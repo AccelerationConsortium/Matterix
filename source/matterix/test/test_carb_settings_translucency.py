@@ -4,8 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """Regression coverage for the removed rtx_raytracing_fractionalCutoutOpacity
-carb setting on the base env config, and its replacement on the "pathtracing"
-video-recording preset.
+carb setting on the base env config.
 
 Background: rtx_raytracing_fractionalCutoutOpacity is a raytracing-namespaced
 setting. SimulationContext.__init__() (which applies the base env's
@@ -24,14 +23,13 @@ Neither way did it ever take effect on the base config, so it's removed there.
 IsaacLab's own validation behavior is NOT something this test pins down, since
 it has already changed shape once across versions for reasons outside
 Matterix's control. This test instead pins down what Matterix owns: the base
-config never reintroduces the dead key there, translucency stays configured,
-and -- since the setting genuinely does exist once raytracing mode is
-engaged -- the "pathtracing" preset (the one place it can take effect) sets it
-explicitly and it reads back correctly after a real path-traced render.
+config never reintroduces the dead key, and translucency stays configured and
+actually readable back from carb settings after a real environment
+construction.
 
 Usage::
 
-    python source/matterix/test/test_carb_settings_translucency.py --headless --enable_cameras
+    python source/matterix/test/test_carb_settings_translucency.py --headless
 """
 
 import argparse
@@ -50,14 +48,8 @@ import sys
 
 import carb.settings
 
-import gymnasium as gym
-import torch
-
 import matterix_tasks  # noqa: F401  registers task cfgs
-from isaaclab_tasks.utils import parse_env_cfg
 from matterix_tasks.test_dev_tasks.test_franka_beaker_lift import FrankaBeakerLiftEnvTestCfg
-
-TASK = "Matterix-Test-Beaker-Lift-Franka-v1"
 
 
 def main() -> int:
@@ -66,51 +58,22 @@ def main() -> int:
     def check(name: str, cond: bool) -> None:
         results[name] = bool(cond)
 
-    # --- Base config: the dead key must never reappear, translucency must stay set ---
     # sim/render config is inherited unmodified from MatterixBaseEnvCfg - any concrete
     # task cfg carries the same carb_settings this test is guarding.
-    base_cfg = FrankaBeakerLiftEnvTestCfg()
-    carb_settings_cfg = base_cfg.sim.render.carb_settings or {}
+    cfg = FrankaBeakerLiftEnvTestCfg()
+    carb_settings_cfg = cfg.sim.render.carb_settings or {}
 
-    check("base_config_has_no_dead_key", "rtx_raytracing_fractionalCutoutOpacity" not in carb_settings_cfg)
-    check("base_config_keeps_translucency", carb_settings_cfg.get("rtx_translucency_enabled") is True)
+    check("config_has_no_dead_key", "rtx_raytracing_fractionalCutoutOpacity" not in carb_settings_cfg)
+    check("config_keeps_translucency", carb_settings_cfg.get("rtx_translucency_enabled") is True)
 
+    # Live check: construct a real SimulationContext from Matterix's actual default
+    # sim config and confirm the setting it owns actually reads back correctly.
     from isaaclab.sim import SimulationContext
 
-    sim = SimulationContext(base_cfg.sim)
+    sim = SimulationContext(cfg.sim)
     settings = carb.settings.get_settings()
 
     check("translucency_reads_back_true", settings.get("/rtx/translucency/enabled") is True)
-    # NOTE: deliberately not asserting on whether /rtx/raytracing/fractionalCutoutOpacity
-    # is registered at this point - that depends on which raytracing/RTX extensions
-    # happened to load (e.g. --enable_cameras alone can pull enough of the stack in
-    # eagerly to register it), not on anything Matterix controls. See module docstring.
-    SimulationContext.clear_instance()
-
-    # --- Pathtracing preset: the one place the setting can actually take effect ---
-    pt_cfg = parse_env_cfg(TASK, device=args_cli.device, num_envs=1)
-    pt_cfg.prepare_for_video_rec(resolution=(640, 480), render="pathtracing")
-
-    check(
-        "pathtracing_preset_sets_cutout_opacity",
-        pt_cfg.sim.render.carb_settings.get("/rtx/pathtracing/fractionalCutoutOpacity") is True,
-    )
-
-    env = gym.make(TASK, cfg=pt_cfg, render_mode="rgb_array").unwrapped
-    env.reset()
-    with torch.inference_mode():
-        action = torch.zeros((env.num_envs, env.action_manager.total_action_dim), device=env.device)
-        for _ in range(10):
-            env.step(action)
-            env.render()
-
-    settings = carb.settings.get_settings()
-    check("pathtracing_rendermode_engaged", settings.get("/rtx/rendermode") in ("PathTracing", "RaytracedLighting", "RealTimePathTracing"))
-    check(
-        "pathtracing_cutout_opacity_reads_back_true",
-        settings.get("/rtx/pathtracing/fractionalCutoutOpacity") is True,
-    )
-    env.close()
 
     print("\n=== RESULTS ===")
     for k, v in results.items():

@@ -87,9 +87,7 @@ class MatterixBaseEnvCfg:
             # just calls set_setting() unconditionally, so the same key is a silent
             # no-op there instead of a crash. Either way it never took effect here, so
             # it's left out of the base config. rtx_translucency_enabled is a separate,
-            # non-raytracing-namespaced setting and is unaffected. The actual raytracing-
-            # mode setting now lives where it can take effect: see
-            # MatterixBaseEnvCfg.prepare_for_video_rec()'s "pathtracing" preset below.
+            # non-raytracing-namespaced setting and is unaffected.
             carb_settings={"rtx_translucency_enabled": True}
         )
     )
@@ -340,14 +338,6 @@ class MatterixBaseEnvCfg:
                     "/rtx/pathtracing/spp": 64,
                     "/rtx/pathtracing/totalSpp": 512,
                     "/rtx/pathtracing/maxBounces": 6,
-                    # Restores the fractional-cutout-opacity behavior originally
-                    # attempted (and non-functional) on the base env config -- this is
-                    # the one place it can actually take effect, since it's only
-                    # registered once path tracing is engaged (confirmed on both
-                    # isaacsim 5.1.0.0 and 6.0.1.0). Defaults to True on both versions
-                    # anyway; set explicitly so intent doesn't silently depend on
-                    # whatever a future Isaac Sim version happens to default it to.
-                    "/rtx/pathtracing/fractionalCutoutOpacity": True,
                 },
             ),
         }
