@@ -219,6 +219,20 @@ class FrankaBeakerHeaterSemanticsEnvTestCfg(MatterixBaseEnvCfg):
             ),
             WaitCfg(duration=5.0),  # Wait and observe heat transfer from IKA plate to beaker,
         ],
+        "heater_only": [
+            # No agent_assets anywhere in this sequence - regression coverage for the
+            # action=None path (StateMachine.step() returns action=None; env.step()
+            # and scripts/run_workflow.py must both handle that without crashing).
+            TurnOnHeaterCfg(
+                asset_name="ika_plate",
+                value=True,
+                target_temperature=373.15,
+            ),
+            TurnOnHeaterCfg(
+                asset_name="ika_plate",
+                value=False,
+            ),
+        ],
     }
 
     def __post_init__(self):
