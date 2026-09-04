@@ -5,39 +5,43 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: unit-tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   MatterixUnitTests:
-    runs-on: self-hosted
-    defaults:
-      run:
-        shell: bash
-    env:
-      DOCKER_HOST: unix:///var/run/docker.sock
+    # Isaac/Sim integration and rendering checks belong in a separate trusted GPU job.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
-
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Verify Docker install
-        run: |
-          docker --version
-          docker info
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: source/matterix_sm/pyproject.toml
 
-      - name: Start Docker container
-        run: python3 docker/container.py start
-
-      - name: Run command inside the container
+      - name: Install CPU test dependencies
         run: |
-          CONTAINER_ID=$(docker ps -qf "name=isaac-lab-base")
-          docker exec $CONTAINER_ID bash -c "echo Hello from inside the container!"
-          docker exec $CONTAINER_ID bash -c "ls /workspace"
+          python -m pip install --upgrade pip
+          python -m pip install "numpy>=1.23" pytest
+          python -m pip install "torch==2.10.0" --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install --editable source/matterix_sm --no-deps
 
-      - name: Stop container
+      - name: Run CPU unit tests
         run: |
-          python3 docker/container.py stop
-
-      - name: Clean workspace
-        run: |
-          rm -rf ./* .[^.]*
+          python -m pytest \
+            -q \
+            -p no:cacheprovider \
+            source/matterix_sm/test \
+            source/matterix/test
