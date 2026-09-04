@@ -382,7 +382,7 @@ class StateMachine:
 
     def step(  # noqa: C901
         self, obs: dict | None = None, reward=None, terminated=None, truncated=None
-    ) -> tuple[dict[str, torch.Tensor] | torch.Tensor, list | None]:
+    ) -> tuple[dict[str, torch.Tensor] | torch.Tensor | None, list | None]:
         """Advance exactly one step for all environments.
 
         Executes the current action for each active environment, updates per-env
@@ -396,9 +396,14 @@ class StateMachine:
 
         Returns:
             tuple containing:
-                - action_dict: dict[str, torch.Tensor] or torch.Tensor - Action dictionary mapping
-                  agent names to action tensors. If only one agent, returns single tensor for
-                  backward compatibility.
+                - action_dict: dict[str, torch.Tensor] or torch.Tensor or None - Action dictionary
+                  mapping agent names to action tensors. If only one agent, returns single tensor
+                  for backward compatibility. None if the *entire* action sequence has no
+                  ``agent_assets`` (e.g. a workflow made up only of ``SemanticActionCfg``/``Wait``
+                  steps) - there is no agent to hold a pose for, so there is nothing to return.
+                  Callers must guard ``.to(device)``/similar calls on this value and pass it
+                  through as-is to :meth:`MatterixBaseEnv.step`, which treats None as "apply no
+                  physical control this step".
                 - semantic_actions: list[SemanticInfo] or None - Semantic state changes to apply
                   this step, or None if no semantic actions occurred.
         """

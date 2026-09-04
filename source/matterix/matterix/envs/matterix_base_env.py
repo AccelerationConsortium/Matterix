@@ -207,7 +207,7 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
     Operations - MDP
     """
 
-    def step(self, action: torch.Tensor, semantic_actions: list | None = None) -> VecEnvStepReturn:
+    def step(self, action: torch.Tensor | None, semantic_actions: list | None = None) -> VecEnvStepReturn:
         """Execute one time-step of the environment's dynamics and reset terminated environments.
 
         Unlike the :class:`ManagerBasedEnv.step` class, the function performs the following operations:
@@ -222,6 +222,12 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
 
         Args:
             action: The actions to apply on the environment. Shape is (num_envs, action_dim).
+                May be None for a step whose action sequence has no ``agent_assets`` at all
+                (e.g. a pure :class:`SemanticActionCfg` step like ``TurnOnHeaterCfg``). When
+                None, no physical control is applied this step: ``action_manager.process_action``
+                is skipped entirely, so the previous decimation loop's actuator targets remain
+                in effect and the robot holds its last commanded pose rather than being
+                re-commanded or zeroed. Typically provided by :class:`StateMachine`.
             semantic_actions: Optional list of SemanticInfo objects describing semantic state
                 changes to apply this step (e.g., temperature changes, contact events). If None,
                 no semantic actions are applied. Typically provided by StateMachine.
@@ -230,7 +236,14 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
             A tuple containing the observations, rewards, resets (terminated and truncated) and extras.
         """
         # process actions
-        self.action_manager.process_action(action.to(self.device))
+        # action can legitimately be None for a step whose StateMachine action list has no
+        # agent_assets at all (e.g. a pure SemanticActionCfg step like TurnOnHeaterCfg) --
+        # matterix_sm's "hold current pose" fallback in StateMachine.step() only inits for
+        # agents referenced *in that action sequence*, not the scene's full action space, so
+        # it stays None there. Mirror how semantic_actions=None already means "apply
+        # nothing" for the sibling parameter: skip processing rather than crash.
+        if action is not None:
+            self.action_manager.process_action(action.to(self.device))
 
         self.recorder_manager.record_pre_step()
 
