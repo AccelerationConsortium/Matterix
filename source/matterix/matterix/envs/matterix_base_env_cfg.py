@@ -65,22 +65,31 @@ class MatterixBaseEnvCfg:
 
     sim: SimulationCfg = SimulationCfg(
         render=RenderCfg(
-            # "rtx_raytracing_fractionalCutoutOpacity" removed -- cleanup of a dead
-            # setting, not an active-crash fix on current main. On isaaclab==2.3.0
-            # (Isaac Sim 5.1.0, what main was pinned to when this was added in #23),
-            # SimulationContext._apply_render_settings_from_cfg() validated every
-            # carb_settings key against currently-registered carb settings and raised
-            # ValueError when a key wasn't found -- this key isn't registered under
-            # Isaac Sim 5.1.0 and blocked all env construction. Confirmed the setting
-            # has no home anywhere under isaacsim 6.0.1.0 either (full /rtx settings
-            # tree search, including the renderer's newer rtpt/path-tracing branch),
-            # so this isn't a rename to chase -- the feature appears retired.
-            # On current main's isaaclab==3.0.0b2.post1, the equivalent code
-            # (SimulationContext._apply_render_settings()) dropped that validation
-            # entirely and just calls set_setting() unconditionally, so the same dead
-            # key no longer raises -- it's a silent no-op there instead of a crash.
-            # Left out regardless, since it does nothing on any version this project
-            # has targeted. rtx_translucency_enabled is unaffected and still applies.
+            # "rtx_raytracing_fractionalCutoutOpacity" removed -- it's a raytracing-
+            # namespaced setting, and this base sim config gets applied by
+            # SimulationContext.__init__() before the renderer ever switches into a
+            # raytracing/path-tracing render mode. The raytracing extension that owns
+            # this setting hasn't registered it yet at that point in the pipeline, on
+            # any version -- confirmed identically on isaaclab==2.3.0/isaacsim==5.1.0.0
+            # and current main's isaaclab==3.0.0b2.post1/isaacsim==6.0.1.0: the setting
+            # doesn't exist under /rtx/raytracing/... at default-render-mode startup on
+            # either version, but genuinely registers (with real values, e.g.
+            # /rtx/pathtracing/fractionalCutoutOpacity=True) once a scene is actually
+            # rendered in raytracing/path-tracing mode on BOTH versions. So this was
+            # never a renamed-or-retired-upstream-setting problem; it's a config applied
+            # at the wrong lifecycle stage to ever take effect in the base (non-raytraced)
+            # render path, on any version this project has targeted. On isaaclab==2.3.0,
+            # SimulationContext._apply_render_settings_from_cfg() additionally validated
+            # every carb_settings key against the registry and raised ValueError for one
+            # that wasn't registered yet -- that's the original crash (#23). On current
+            # main's isaaclab==3.0.0b2.post1, the rewritten equivalent
+            # (SimulationContext._apply_render_settings()) dropped that validation and
+            # just calls set_setting() unconditionally, so the same key is a silent
+            # no-op there instead of a crash. Either way it never took effect here, so
+            # it's left out of the base config. rtx_translucency_enabled is a separate,
+            # non-raytracing-namespaced setting and is unaffected. The actual raytracing-
+            # mode setting now lives where it can take effect: see
+            # MatterixBaseEnvCfg.prepare_for_video_rec()'s "pathtracing" preset below.
             carb_settings={"rtx_translucency_enabled": True}
         )
     )
@@ -331,6 +340,14 @@ class MatterixBaseEnvCfg:
                     "/rtx/pathtracing/spp": 64,
                     "/rtx/pathtracing/totalSpp": 512,
                     "/rtx/pathtracing/maxBounces": 6,
+                    # Restores the fractional-cutout-opacity behavior originally
+                    # attempted (and non-functional) on the base env config -- this is
+                    # the one place it can actually take effect, since it's only
+                    # registered once path tracing is engaged (confirmed on both
+                    # isaacsim 5.1.0.0 and 6.0.1.0). Defaults to True on both versions
+                    # anyway; set explicitly so intent doesn't silently depend on
+                    # whatever a future Isaac Sim version happens to default it to.
+                    "/rtx/pathtracing/fractionalCutoutOpacity": True,
                 },
             ),
         }
