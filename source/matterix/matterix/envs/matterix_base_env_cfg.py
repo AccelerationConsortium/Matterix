@@ -65,13 +65,22 @@ class MatterixBaseEnvCfg:
 
     sim: SimulationCfg = SimulationCfg(
         render=RenderCfg(
-            # "rtx_raytracing_fractionalCutoutOpacity" removed -- isaaclab's
-            # _apply_render_settings_from_cfg() (simulation_context.py) validates every
-            # carb_settings key against currently-registered carb settings, and this one
-            # isn't registered under Isaac Sim 5.1 (renamed/restructured upstream since
-            # this was added in #23) -- was raising ValueError and blocking env creation
-            # entirely. Purely a raytraced-cutout-opacity rendering toggle, not
-            # physics-affecting.
+            # "rtx_raytracing_fractionalCutoutOpacity" removed -- cleanup of a dead
+            # setting, not an active-crash fix on current main. On isaaclab==2.3.0
+            # (Isaac Sim 5.1.0, what main was pinned to when this was added in #23),
+            # SimulationContext._apply_render_settings_from_cfg() validated every
+            # carb_settings key against currently-registered carb settings and raised
+            # ValueError when a key wasn't found -- this key isn't registered under
+            # Isaac Sim 5.1.0 and blocked all env construction. Confirmed the setting
+            # has no home anywhere under isaacsim 6.0.1.0 either (full /rtx settings
+            # tree search, including the renderer's newer rtpt/path-tracing branch),
+            # so this isn't a rename to chase -- the feature appears retired.
+            # On current main's isaaclab==3.0.0b2.post1, the equivalent code
+            # (SimulationContext._apply_render_settings()) dropped that validation
+            # entirely and just calls set_setting() unconditionally, so the same dead
+            # key no longer raises -- it's a silent no-op there instead of a crash.
+            # Left out regardless, since it does nothing on any version this project
+            # has targeted. rtx_translucency_enabled is unaffected and still applies.
             carb_settings={"rtx_translucency_enabled": True}
         )
     )
