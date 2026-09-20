@@ -28,6 +28,7 @@ from .move_relative import MoveRelative, MoveRelativeCfg
 from .move_to_frame import MoveToFrame, MoveToFrameCfg
 from .move_to_pose import MoveToPose, MoveToPoseCfg
 from .semantic_action import SemanticAction, SemanticActionCfg
+from .verify_contact import VerifyContact, VerifyContactCfg
 from .wait import Wait, WaitCfg
 
 __all__ = [
@@ -53,4 +54,7 @@ __all__ = [
     # Wait action
     "Wait",
     "WaitCfg",
+    # Verify contact action
+    "VerifyContact",
+    "VerifyContactCfg",
 ]
