@@ -160,6 +160,22 @@ def object_ang_vel(env: ManagerBasedEnv, asset_name: str) -> torch.Tensor:
     return _as_torch(obj.data.root_ang_vel_w)
 
 
+def collection_object_world_pose(env: ManagerBasedEnv, collection_name: str, object_name: str) -> torch.Tensor:
+    """Collection child pose in world frame as ``[position, quaternion]``."""
+    collection = env.rigid_object_collection_view(collection_name)
+    return _as_torch(collection.child_pose_w(object_name))
+
+
+def collection_object_world_pos(env: ManagerBasedEnv, collection_name: str, object_name: str) -> torch.Tensor:
+    """Collection child position in world frame."""
+    return collection_object_world_pose(env, collection_name, object_name)[..., :3]
+
+
+def collection_object_world_quat(env: ManagerBasedEnv, collection_name: str, object_name: str) -> torch.Tensor:
+    """Collection child orientation in world frame as an ``xyzw`` quaternion."""
+    return collection_object_world_pose(env, collection_name, object_name)[..., 3:]
+
+
 def frame_world_pos(env: ManagerBasedEnv, asset_name: str, frame_name: str) -> torch.Tensor:
     """Get frame position in world frame for a specific asset and frame.
 

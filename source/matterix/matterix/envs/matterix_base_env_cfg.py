@@ -27,6 +27,7 @@ from matterix_assets import (
     MatterixRigidObjectCfg,
     MatterixStaticObjectCfg,
 )
+from matterix_assets.matterix_rigid_object_collection import MatterixRigidObjectCollectionCfg
 
 from isaaclab.envs.common import ViewerCfg
 from isaaclab.envs.ui import BaseEnvWindow
@@ -221,7 +222,10 @@ class MatterixBaseEnvCfg:
 
     articulated_assets: dict[str, MatterixArticulationCfg] = {}
 
-    objects: dict[str, MatterixRigidObjectCfg | MatterixStaticObjectCfg] = {}
+    objects: dict[
+        str,
+        MatterixRigidObjectCfg | MatterixStaticObjectCfg | MatterixRigidObjectCollectionCfg,
+    ] = {}
 
     particle_systems: dict[str, ParticleSystemCfg] = {}
 

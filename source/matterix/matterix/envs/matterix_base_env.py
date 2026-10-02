@@ -18,13 +18,15 @@ from isaacsim.core.version import get_version
 from matterix.managers.semantics import SemanticManager
 from matterix.particle_systems import Particles
 from matterix.utils.real_time_video_recorder import RealTimeVideoRecorder
-from matterix_assets import (
-    MatterixArticulationCfg,
-    MatterixRigidObjectCfg,
-    MatterixStaticObjectCfg,
+from matterix_assets import MatterixArticulationCfg, MatterixRigidObjectCfg, MatterixStaticObjectCfg
+from matterix_assets.matterix_rigid_object_collection import (
+    MatterixRigidObjectCollectionCfg,
+    RigidObjectCollectionManifest,
+    RigidObjectCollectionView,
+    materialize_rigid_object_collection,
 )
 
-from isaaclab.assets import AssetBaseCfg
+from isaaclab.assets import AssetBaseCfg, RigidObjectCollectionCfg
 from isaaclab.envs.common import VecEnvObs, VecEnvStepReturn
 from isaaclab.envs.manager_based_env import ManagerBasedEnv
 from isaaclab.managers import (
@@ -86,6 +88,9 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
 
     semantic_manager: SemanticManager
     """semantic manager for the environment."""
+
+    rigid_object_collection_manifests: dict[str, RigidObjectCollectionManifest]
+    """Stable child manifests for rigid object collections keyed by scene name."""
 
     def __init__(self, cfg: MatterixBaseEnvCfg, render_mode: str | None = None, **kwargs):
         """Initialize the environment.
@@ -559,17 +564,22 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
 
     def add_event_terms(self, events, scene):
         for asset_name, asset_cfg in scene.__dict__.items():
-            if isinstance(asset_cfg, MatterixArticulationCfg):
-                for term_name, term in asset_cfg.event_terms.items():
-                    term.params["asset_cfg"] = SceneEntityCfg(asset_name)
-                    setattr(events, f"Events_{asset_name}_{term_name}", term)
-            if isinstance(asset_cfg, MatterixRigidObjectCfg | MatterixStaticObjectCfg):
+            if isinstance(
+                asset_cfg,
+                (
+                    MatterixArticulationCfg,
+                    MatterixRigidObjectCfg,
+                    MatterixStaticObjectCfg,
+                    RigidObjectCollectionCfg,
+                ),
+            ):
                 for term_name, term in asset_cfg.event_terms.items():
                     term.params["asset_cfg"] = SceneEntityCfg(asset_name)
                     setattr(events, f"Events_{asset_name}_{term_name}", term)
 
     def setup_scene(self):
         self.cfg.scene = InteractiveSceneCfg(self.cfg.scene.num_envs, self.cfg.env_spacing, self.cfg.replicate_physics)
+        self.rigid_object_collection_manifests = {}
         # populate scene with articulated asset configs
         for asset_name, asset_cfg in self.cfg.articulated_assets.items():
             asset_cfg.prim_path += f"_{asset_name}"
@@ -586,8 +596,13 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
         # populate scene with rigid asset configs
         for asset_name, asset_cfg in self.cfg.objects.items():
             asset_cfg.prim_path += f"_{asset_name}"
-            setattr(self.cfg.scene, asset_name, asset_cfg)
-            # populate scene with sensors attached to the articulated assets
+            if isinstance(asset_cfg, MatterixRigidObjectCollectionCfg):
+                materialized = materialize_rigid_object_collection(asset_cfg)
+                setattr(self.cfg.scene, asset_name, materialized.collection)
+                self.rigid_object_collection_manifests[asset_name] = materialized.manifest
+            else:
+                setattr(self.cfg.scene, asset_name, asset_cfg)
+            # populate scene with sensors attached to rigid assets and collections
             for sensor_name, sensor_cfg in asset_cfg.sensors.items():
                 sensor_cfg.prim_path = asset_cfg.prim_path + sensor_cfg.prim_path
                 sensor_name = f"{sensor_name}_{asset_name}"
@@ -624,6 +639,15 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
                     init_state=AssetBaseCfg.InitialStateCfg(pos=light_cfg.pos, rot=light_cfg.rot),
                 ),
             )
+
+    def rigid_object_collection_view(self, asset_name: str) -> RigidObjectCollectionView:
+        """Return stable name-based child access for one rigid object collection."""
+        if asset_name not in self.rigid_object_collection_manifests:
+            raise KeyError(
+                f"Rigid object collection {asset_name!r} is unavailable; "
+                f"known collections: {list(self.rigid_object_collection_manifests)}"
+            )
+        return RigidObjectCollectionView(self.scene[asset_name], self.rigid_object_collection_manifests[asset_name])
 
     def _inject_contact_sensors(self):
         """For every asset with an IsInContactCfg, build and register a ContactSensorCfg.
@@ -676,7 +700,11 @@ class MatterixBaseEnv(ManagerBasedEnv, gym.Env):
                 setattr(self.cfg.scene, sensor_scene_key, sensor_cfg)
 
                 # Ensure contact sensors are activated on the asset spawn.
-                if hasattr(asset_cfg, "activate_contact_sensors"):
+                if isinstance(asset_cfg, MatterixRigidObjectCollectionCfg):
+                    rigid_object_collection_cfg = getattr(self.cfg.scene, asset_name)
+                    for rigid_cfg in rigid_object_collection_cfg.rigid_objects.values():
+                        rigid_cfg.spawn.activate_contact_sensors = True
+                elif hasattr(asset_cfg, "activate_contact_sensors"):
                     asset_cfg.activate_contact_sensors = True
                 elif hasattr(asset_cfg, "spawn") and hasattr(asset_cfg.spawn, "activate_contact_sensors"):
                     asset_cfg.spawn.activate_contact_sensors = True
