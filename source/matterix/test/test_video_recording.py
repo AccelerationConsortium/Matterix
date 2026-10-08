@@ -172,7 +172,8 @@ def run_single_mode(
     for i in range(max_steps):
         with torch.inference_mode():
             action, semantic_actions = sm.step(obs)
-            action = action.to(env.device)
+            if action is not None:
+                action = action.to(env.device)
             obs, _, terminated, truncated, _ = env.step(action, semantic_actions=semantic_actions)
         step_count = i + 1
 

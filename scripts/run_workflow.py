@@ -40,6 +40,15 @@ parser.add_argument(
     help="Environment/task name.",
 )
 parser.add_argument("--workflow", type=str, default="pickup_beaker", help="Name of the workflow to run.")
+parser.add_argument(
+    "--max_episodes",
+    type=int,
+    default=None,
+    help=(
+        "Stop after this many episodes and exit normally, instead of running forever. "
+        "Useful for automated/CI invocations. Default: unlimited (runs until the app is closed)."
+    ),
+)
 parser.add_argument("--record_video", action="store_true", default=False, help="Record a video of each episode.")
 parser.add_argument(
     "--video_dir",
@@ -130,7 +139,7 @@ def main():
     episode_count = 0
 
     # Main simulation loop
-    while simulation_app.is_running():
+    while simulation_app.is_running() and (args_cli.max_episodes is None or episode_count < args_cli.max_episodes):
         with torch.inference_mode():
             obs, _ = env.reset()
             sm.reset()
@@ -147,7 +156,10 @@ def main():
             # Run until workflow completes or fails
             while not (sm.action_sequence_success | sm.action_sequence_failure).all():
                 action, semantic_actions = sm.step(obs)
-                action = action.to(env.device)
+                # action is None for a step whose action sequence has no agent_assets at all
+                # (a pure-semantic workflow, e.g. only TurnOnHeaterCfg steps).
+                if action is not None:
+                    action = action.to(env.device)
                 obs, _, terminated, truncated, _ = env.step(action, semantic_actions=semantic_actions)
                 step_count += 1
 
