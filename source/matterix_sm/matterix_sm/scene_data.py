@@ -83,6 +83,18 @@ class RigidObjectData:
     stored in SceneData.
     """
 
+    is_in_contact: torch.Tensor | None = None
+    """Physics-derived contact state, shape (num_envs,), or None if not populated.
+
+    Sourced from an ``IsInContactPhysicsCfg``/``IsInContactManual`` semantic attached to
+    this object and exposed via an ``ObsTerm`` calling
+    ``matterix.envs.mdp.observations.object_is_in_contact`` (see
+    ``managers/semantics/primitive_semantics/is_in_contact.py``). None means the task's
+    observation/semantics config never populated this field for this object -- actions
+    that need it (e.g. ``VerifyContactCfg``) should raise a clear error rather than
+    silently treating it as "not in contact".
+    """
+
 
 @dataclass
 class SceneData:

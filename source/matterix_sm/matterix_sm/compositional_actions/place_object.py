@@ -15,6 +15,7 @@ from ..primitive_actions import (
     MoveRelativeCfg,
     MoveToFrameCfg,
     OpenGripperCfg,
+    VerifyContactCfg,
 )
 from ..robot_action_spaces import ActionSpaceInfo
 
@@ -31,6 +32,18 @@ class PlaceObjectCfg(CompositionalActionCfg):
         target: Name of the target object to place on. REQUIRED.
         post_place_offset: Offset for post-place retreat (x, y, z). Defaults to (0, 0, 0.1).
         action_space_info: Optional action space metadata.
+        held_object: Name of the object being placed (i.e. whatever a prior PickObjectCfg
+            in the same workflow picked up). Only needed when verify_release=True --
+            PlaceObjectCfg otherwise has no way to know which object's contact state to
+            check, since it only ever references `target`, not what the gripper is
+            holding. Default: None.
+        verify_release: If True, append a VerifyContactCfg after the post-place retreat
+            that requires `held_object`'s physics-derived is_in_contact state to be
+            False (i.e. it actually let go, not stuck to a finger via friction/adhesion).
+            Requires `held_object` to be set, and its scene config to expose
+            is_in_contact via an IsInContactPhysicsCfg semantic + ObsTerm -- see
+            VerifyContactCfg's docstring. Default: False (preserves prior
+            pose/duration-only behavior).
 
     Note:
         num_envs, device, and dt are NOT in compositional configs - they're set by StateMachine
@@ -44,6 +57,8 @@ class PlaceObjectCfg(CompositionalActionCfg):
     # Optional fields with defaults
     post_place_offset: tuple[float, float, float] = (0.0, 0.0, 0.1)
     action_space_info: ActionSpaceInfo | None = None
+    held_object: str | None = None
+    verify_release: bool = False
 
     def __post_init__(self):
         """Generate default sub_actions for place sequence after initialization."""
@@ -78,3 +93,18 @@ class PlaceObjectCfg(CompositionalActionCfg):
                 action_space_info=self.action_space_info,
             ),
         ]
+
+        if self.verify_release:
+            if self.held_object is None:
+                raise ValueError(
+                    "PlaceObjectCfg.verify_release=True requires held_object to be set "
+                    "to the name of the object being placed -- PlaceObjectCfg only ever "
+                    "references `target`, so without held_object it has no way to know "
+                    "which object's contact state to check on release."
+                )
+            self.sub_actions.append(
+                VerifyContactCfg(
+                    object=self.held_object,
+                    expected_contact=False,
+                )
+            )

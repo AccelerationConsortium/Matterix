@@ -935,6 +935,7 @@ class StateMachine:
                 lin_vel_w=lin_vel_w,
                 ang_vel_w=ang_vel_w,
                 frames=frames_dict,
+                is_in_contact=data.get("is_in_contact"),
             )
         else:
             # Flat tensor format - TODO: define standard layout

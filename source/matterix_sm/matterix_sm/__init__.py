@@ -53,6 +53,8 @@ from .primitive_actions import (
     OpenGripperCfg,
     SemanticAction,
     SemanticActionCfg,
+    VerifyContact,
+    VerifyContactCfg,
     Wait,
     WaitCfg,
 )
@@ -91,6 +93,8 @@ __all__ = [
     "CloseGripperCfg",
     "SemanticAction",
     "SemanticActionCfg",
+    "VerifyContact",
+    "VerifyContactCfg",
     "Wait",
     "WaitCfg",
     # Semantic support
